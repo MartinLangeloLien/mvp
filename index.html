@@ -61,6 +61,19 @@
   .progress-fill { height:100%; background:#1a6bfa; border-radius:3px; transition:width .4s ease; }
 
   .webhook-entry { font-family:'Courier New',monospace; font-size:11px; border:1px solid #e5e7eb; border-radius:8px; padding:10px; margin-bottom:8px; background:white; }
+
+  /* Demo affordances — visually distinct from product UI */
+  .demo-fill { flex-shrink:0; margin-top:4px; font-size:12px; font-weight:600; color:#7c3aed; background:#f5f3ff; border:1px dashed #c4b5fd; border-radius:7px; padding:6px 11px; cursor:pointer; transition:all .15s; white-space:nowrap; }
+  .demo-fill:hover { background:#ede9fe; }
+  .demo-panel { position:fixed; bottom:16px; left:16px; z-index:60; background:#1e1b2e; color:#e8eaf0; border:1px solid #3a3550; border-radius:12px; box-shadow:0 8px 30px rgba(0,0,0,.25); width:248px; font-size:12px; overflow:hidden; }
+  .demo-panel-head { display:flex; align-items:center; justify-content:space-between; padding:10px 13px; cursor:pointer; background:#262238; }
+  .demo-panel-head .dot { width:7px; height:7px; border-radius:50%; background:#a78bfa; display:inline-block; margin-right:7px; }
+  .demo-panel-body { padding:12px 13px; }
+  .demo-seg { display:flex; gap:4px; margin-top:5px; margin-bottom:11px; background:#15131f; border-radius:7px; padding:3px; }
+  .demo-seg button { flex:1; border:none; background:transparent; color:#9c98b3; font-size:11px; font-weight:600; padding:5px 4px; border-radius:5px; cursor:pointer; transition:all .12s; }
+  .demo-seg button.on { background:#7c3aed; color:white; }
+  .demo-label { font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:#8b87a3; font-weight:700; }
+  .demo-banner { background:#f5f3ff; border:1px solid #ddd6fe; border-radius:10px; padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; gap:12px; font-size:13px; color:#5b21b6; }
 </style>
 </head>
 <body>
@@ -82,6 +95,16 @@
 
 <!-- ===== DASHBOARD ===== -->
 <div id="dashboard" class="max-w-6xl mx-auto px-6 py-10">
+
+  <!-- Demo explainer banner -->
+  <div class="demo-banner" id="demo-banner" style="display:none">
+    <span style="font-size:18px">⚡</span>
+    <div class="flex-1">
+      <strong>This is a clickable prototype</strong> of Volt's Phase 1 registration flow. The EIN check, campaign audit, and registry submission are simulated. Use <strong>⚡ Fill test data</strong> inside a registration to autofill forms, and the <strong>Demo Controls</strong> panel (bottom-left) to force each outcome.
+    </div>
+    <button onclick="resetDemoData()" class="text-xs font-semibold text-purple-700 underline whitespace-nowrap">Reset demo data</button>
+    <button onclick="dismissBanner()" class="text-purple-400 hover:text-purple-700 text-lg leading-none">×</button>
+  </div>
 
   <div class="flex items-start justify-between mb-8">
     <div>
@@ -181,12 +204,80 @@
       <div id="wh-log"></div>
     </aside>
   </div>
+
+  <!-- Demo Controls (force outcomes for predictable review) -->
+  <div class="demo-panel" id="demo-panel">
+    <div class="demo-panel-head" onclick="toggleDemoPanel()">
+      <span><span class="dot"></span>Demo Controls</span>
+      <span id="demo-caret">▾</span>
+    </div>
+    <div class="demo-panel-body" id="demo-panel-body">
+      <div class="demo-label">Campaign audit</div>
+      <div class="demo-seg" data-key="audit">
+        <button data-val="auto">Auto-approve</button>
+        <button data-val="human">Human review</button>
+        <button data-val="random">Random</button>
+      </div>
+      <div class="demo-label">Brand verification</div>
+      <div class="demo-seg" data-key="brand">
+        <button data-val="pass">Pass</button>
+        <button data-val="changes">Changes req.</button>
+        <button data-val="random">Random</button>
+      </div>
+      <div class="demo-label">Registry submission</div>
+      <div class="demo-seg" data-key="registry">
+        <button data-val="success">Success</button>
+        <button data-val="retry">Retry → ok</button>
+        <button data-val="random">Random</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
 // ─────────────────────────────────────────────
-//  DATA
+//  DEMO CONTROLS — deterministic outcomes for review
+//  Each decision reads from DEMO; 'random' restores probabilistic behaviour.
 // ─────────────────────────────────────────────
+let DEMO = { audit:'auto', brand:'pass', registry:'success' };
+
+// ─────────────────────────────────────────────
+//  DATA
+//  Non-terminal sample rows carry a `snapshot` so they resume at their real
+//  step with realistic content. See hydrateSnapshot helpers below.
+// ─────────────────────────────────────────────
+function sampleCampaign(channel, industry) {
+  const c = {
+    messageDesc:'Order confirmations, shipping updates, and appointment reminders for customers who opted in on our website.',
+    exampleMsg:'Hi {{name}}, your order #10432 has shipped and arrives Tuesday. Reply STOP to opt out, HELP for help.',
+    homepageUrl:'https://example.com', privacyUrl:'https://example.com/privacy',
+    optinUrl:'https://example.com/subscribe', termsUrl:'https://example.com/terms',
+    optinScreenshot:'https://example.com/optin-screenshot.png', industry:industry||'E-commerce',
+    directLender:false, ageGate:false, embeddedPhone:false,
+    kwOptin:'', kwOptout:'', kwHelp:'',
+  };
+  if (channel !== '10DLC') { c.msgFrequency='4 msgs/month'; c.estVolume='50000'; }
+  if (channel === 'Short Code') c.supportUrl='https://example.com/support';
+  return c;
+}
+function sampleBrand(company, industry, verified) {
+  return {
+    legalName:company+' LLC', dba:company.split(' ')[0], ein:'12-3456789',
+    bizType:'LLC', country:'US', bizAddress:'500 Market St, Austin, TX 78701',
+    industry:industry||'E-commerce', supportEmail:'support@example.com',
+    supportPhone:'+1 (512) 555-0142', brandId:'BRD-'+company.replace(/[^A-Z]/g,'').slice(0,3)+'01',
+    einVerified: !!verified,
+  };
+}
+const AUDIT_SAMPLE = [
+  { sev:'warn', desc:'Opt-out instruction missing from example', rec:'Carrier best practice: include "Reply STOP to opt out" in your example message.', addressed:false },
+  { sev:'info', desc:'Keyword responder copy not provided', rec:'Consider adding HELP and STOP auto-response text. Not required, but recommended.', addressed:false },
+];
+const BRAND_SAMPLE = [
+  { sev:'error', desc:'Brand name / website mismatch', rec:'The DBA could not be confirmed against your website URL. Make sure the brand name shown on your homepage exactly matches your DBA.', addressed:false },
+  { sev:'warn', desc:'Business type needs confirmation', rec:'Your business type may require additional documentation. Ensure your company is registered with state authorities under the declared type.', addressed:false },
+];
+
 const SAMPLE = [
   { id:'REG-A1B2C3', company:'Acme Corporation',        channel:'10DLC',      statusKey:'registered', state:'P2', step:'Registered',                  date:'5/29/2026' },
   { id:'REG-D4E5F6', company:'TechStart Inc.',           channel:'TFN',        statusKey:'action',     state:'S3', step:'Review audit feedback',        date:'5/29/2026' },
@@ -203,7 +294,56 @@ const SAMPLE = [
   { id:'REG-K2L3M4', company:'Pinnacle Insurance',       channel:'Short Code', statusKey:'registered', state:'P2', step:'Registered',                  date:'5/23/2026' },
 ];
 
-let regs = JSON.parse(JSON.stringify(SAMPLE));
+// Build a flow.reg snapshot for a sample row so it resumes with realistic content.
+function buildSampleSnapshot(r) {
+  const ch = { '10DLC':'10DLC', 'TFN':'TFN (Toll-Free)', 'Short Code':'Short Code' }[r.channel] || r.channel;
+  const industry = { 'GreenLeaf Health':'Healthcare', 'NovaCare Medical Group':'Healthcare', 'FastFin Financial':'Finance', 'Pinnacle Insurance':'Finance', 'Lakeside Realty Group':'Real Estate' }[r.company] || 'E-commerce';
+  const snap = {
+    id:r.id, company:r.company, channelType:ch,
+    campaign: sampleCampaign(ch, industry),
+    brand: {}, autoApproved:true, cycleCount:1, brandCycleCount:0,
+    cnpSuggestion: cnpFor(ch, industry), cnpOverridden:false,
+    auditFeedback:null, brandFeedback:null,
+    feedbackDisposition:null, brandFeedbackDisposition:null, closureReason:null,
+  };
+  // Populate state-appropriate context.
+  if (['S4','S5','S6','S7','P2'].includes(r.state)) snap.auditFeedback = JSON.parse(JSON.stringify(AUDIT_SAMPLE));
+  if (['S5','S6','S7','P2'].includes(r.state)) snap.brand = sampleBrand(r.company, industry, true);
+  if (r.state === 'S3') snap.auditFeedback = JSON.parse(JSON.stringify(AUDIT_SAMPLE));
+  if (r.state === 'S6') { snap.brand = sampleBrand(r.company, industry, true); snap.brandFeedback = JSON.parse(JSON.stringify(BRAND_SAMPLE)); snap.brandCycleCount = 1; }
+  if (r.state === 'S5') snap.brandCycleCount = 1;
+  return snap;
+}
+
+// ─────────────────────────────────────────────
+//  PERSISTENCE (localStorage) — lets drafts survive refresh during review
+// ─────────────────────────────────────────────
+const STORE_KEY = 'volt_demo_v1';
+function freshRegs() { return JSON.parse(JSON.stringify(SAMPLE)); }
+function loadRegs() {
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch(e){}
+  return freshRegs();
+}
+function saveRegs() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(regs)); } catch(e){}
+}
+function resetDemoData() {
+  try { localStorage.removeItem(STORE_KEY); } catch(e){}
+  regs = freshRegs();
+  showDashboard();
+}
+
+let regs = loadRegs();
+
+// Small shared helpers
+function shortChannel(ch) { return { '10DLC':'10DLC', 'TFN (Toll-Free)':'TFN', 'Short Code':'Short Code' }[ch] || ch; }
+function todayStr() { return new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'}); }
+function upsertReg(row) {
+  const i = regs.findIndex(x => x.id === row.id);
+  if (i >= 0) regs[i] = { ...regs[i], ...row };
+  else regs.unshift(row);
+  saveRegs();
+}
 
 const BADGE = {
   registered: { cls:'badge-registered', label:'Registered'       },
@@ -299,51 +439,18 @@ function openReg(id) {
   const r = regs.find(x => x.id === id);
   if (!r) return;
 
-  // Pre-fill flow state for sample records so they show a read-only summary
-  flow.reg = {
-    id: r.id, company: r.company, channelType: r.channel,
-    campaign:{}, brand:{ legalName: r.company },
-    autoApproved: true, cycleCount: 1, brandCycleCount: 1,
-    cnpSuggestion: cnpFor(r.channel), cnpOverridden: false,
-    auditFeedback: [], brandFeedback: [], closureReason: null,
-  };
+  // Hydrate flow.reg: use a saved snapshot if present (drafts / created regs),
+  // otherwise build a realistic one for the sample row so it resumes in context.
+  flow.reg = r.snapshot ? JSON.parse(JSON.stringify(r.snapshot)) : buildSampleSnapshot(r);
   flow.state = r.state;
   flow.webhooks = [];
+  einOk = !!(flow.reg.brand && flow.reg.brand.einVerified);
 
   showFlow(r.company);
 
-  if (r.state === 'P2') renderP2();
-  else if (r.state === 'S8') renderS8('USER_CLOSED');
-  else renderReadOnly(r);
-}
-
-function renderReadOnly(r) {
-  const b = BADGE[r.statusKey];
-  setBody(`
-    <div class="fade-in">
-      <div class="card p-6 mb-4">
-        <div class="flex items-start justify-between mb-4">
-          <div>
-            <div class="text-xs text-gray-400 mb-1">${r.id}</div>
-            <div class="text-lg font-bold text-gray-900">${r.company}</div>
-          </div>
-          <span class="badge ${b.cls}">${b.label}</span>
-        </div>
-        <div class="grid grid-cols-2 gap-3 text-sm">
-          <div><span class="text-gray-400">Channel</span><div class="font-medium mt-0.5">${r.channel}</div></div>
-          <div><span class="text-gray-400">Current step</span><div class="font-medium mt-0.5">${r.step}</div></div>
-          <div><span class="text-gray-400">Started</span><div class="font-medium mt-0.5">${r.date}</div></div>
-          <div><span class="text-gray-400">Phase</span><div class="font-medium mt-0.5">Phase 1 — Audit</div></div>
-        </div>
-      </div>
-      <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800">
-        <strong>Action required:</strong> This registration is at the "${r.step}" step and is waiting for your input.
-        <div class="mt-3">
-          <button class="btn btn-primary text-sm" onclick="startRegistration()">Continue this registration →</button>
-        </div>
-      </div>
-    </div>
-  `);
+  if (r.state === 'P2')      { renderP2(); }
+  else if (r.state === 'S8') { renderS8(flow.reg.closureReason || 'USER_CLOSED'); }
+  else                       { go(r.state); }   // S1–S7 land directly at the real step
 }
 
 // ─────────────────────────────────────────────
@@ -446,8 +553,11 @@ function startRegistration() {
 
 function closeReg() {
   if (!confirm('Close this registration? It will be kept for your records.')) return;
-  emit('REGISTRATION_CLOSED', { registration_id:flow.reg.id, reason:'USER_CLOSED', actor_type:'user' });
+  const r = flow.reg;
+  r.closureReason = 'USER_CLOSED';
+  emit('REGISTRATION_CLOSED', { registration_id:r.id, reason:'USER_CLOSED', actor_type:'user' });
   flow.state = 'S8';
+  upsertReg({ id:r.id, company:r.brand?.legalName||r.company||'New Registration', channel:shortChannel(r.channelType), statusKey:'closed', state:'S8', step:'Registration closed', date: (regs.find(x=>x.id===r.id)?.date)||todayStr(), snapshot: JSON.parse(JSON.stringify(r)) });
   updateSidebar();
   renderS8('USER_CLOSED');
   document.getElementById('close-btn').style.display = 'none';
@@ -459,7 +569,10 @@ function closeReg() {
 function renderS1() {
   const r = flow.reg; const c = r.campaign||{};
   setBody(`
-    ${hdr(1,'Campaign details','Tell us about your SMS campaign so we can audit it for carrier compliance.')}
+    <div class="flex items-start justify-between mb-2">
+      ${hdr(1,'Campaign details','Tell us about your SMS campaign so we can audit it for carrier compliance.')}
+      <button class="demo-fill" onclick="fillTestS1()" title="Demo: autofill every field">⚡ Fill test data</button>
+    </div>
 
     <div class="card p-5 mb-4">
       <label class="label">Channel type <span class="req">*</span></label>
@@ -524,19 +637,68 @@ function renderS1() {
             <div><div class="text-sm font-medium text-gray-700">Embedded Phone Number</div><div class="text-xs text-gray-400">Messages contain a phone number</div></div>
           </label>
         </div>
+        <div class="mt-4 pt-4 border-t border-gray-100 space-y-3">
+          <div class="text-xs font-medium text-gray-500">Keyword responder copy <span class="text-gray-400">(auto-replies)</span></div>
+          <div><label class="label">Opt-in (START) response</label><input class="input" id="f-kw-optin" value="${c.kwOptin||''}" placeholder="You're subscribed! Reply HELP for help, STOP to cancel."/></div>
+          <div><label class="label">Opt-out (STOP) response</label><input class="input" id="f-kw-optout" value="${c.kwOptout||''}" placeholder="You've been unsubscribed. No more messages will be sent."/></div>
+          <div><label class="label">HELP response</label><input class="input" id="f-kw-help" value="${c.kwHelp||''}" placeholder="For support call +1 (512) 555-0142 or email support@example.com."/></div>
+        </div>
       </div>
 
       <div id="s1-errs" class="mb-3"></div>
-      <button class="btn btn-primary w-full justify-center py-2.5" onclick="submitS1()">Submit for audit →</button>
+      <div class="flex gap-3">
+        <button class="btn btn-secondary" onclick="saveDraft()">Save draft</button>
+        <button class="btn btn-primary flex-1 justify-center py-2.5" onclick="submitS1()">Submit for audit →</button>
+      </div>
     </div>
   `);
 }
 
+// Read whatever S1 inputs are currently on screen into flow.reg.campaign,
+// so values survive a re-render (e.g. channel-type change) and Save Draft.
+function captureS1() {
+  const g = id => { const el = document.getElementById(id); return el ? (el.value||'').trim() : undefined; };
+  const ck = id => { const el = document.getElementById(id); return el ? !!el.checked : undefined; };
+  const c = flow.reg.campaign || (flow.reg.campaign = {});
+  const set = (key, val) => { if (val !== undefined) c[key] = val; };
+  set('messageDesc',g('f-desc')); set('exampleMsg',g('f-example'));
+  set('homepageUrl',g('f-home')); set('privacyUrl',g('f-privacy'));
+  set('optinUrl',g('f-optin')); set('termsUrl',g('f-terms'));
+  set('optinScreenshot',g('f-screenshot'));
+  const ind = document.getElementById('f-industry'); if (ind) c.industry = ind.value;
+  set('msgFrequency',g('f-freq')); set('estVolume',g('f-vol')); set('supportUrl',g('f-support'));
+  set('directLender',ck('f-lender')); set('ageGate',ck('f-agegate')); set('embeddedPhone',ck('f-phone'));
+  set('kwOptin',g('f-kw-optin')); set('kwOptout',g('f-kw-optout')); set('kwHelp',g('f-kw-help'));
+  return c;
+}
+
 function onChannelChange() {
-  flow.reg.channelType = document.getElementById('f-channel').value;
+  captureS1();                                   // preserve typed values before re-render
+  const next = document.getElementById('f-channel').value;
+  flow.reg.channelType = next;
+  // Spec: channel-type change invalidates channel-specific fields only.
+  if (next === '10DLC') { delete flow.reg.campaign.msgFrequency; delete flow.reg.campaign.estVolume; delete flow.reg.campaign.supportUrl; }
+  if (next === 'TFN (Toll-Free)') { delete flow.reg.campaign.supportUrl; }
   const p = document.getElementById('channel-pill');
-  if (flow.reg.channelType) { p.textContent = flow.reg.channelType; p.style.display = 'inline-block'; }
+  if (next) { p.textContent = next; p.style.display = 'inline-block'; }
   renderS1();
+}
+
+function fillTestS1() {
+  if (!flow.reg.channelType) { flow.reg.channelType = '10DLC'; }
+  flow.reg.campaign = sampleCampaign(flow.reg.channelType, 'E-commerce');
+  const p = document.getElementById('channel-pill');
+  p.textContent = flow.reg.channelType; p.style.display = 'inline-block';
+  renderS1();
+}
+
+function saveDraft() {
+  captureS1();
+  const r = flow.reg;
+  upsertReg({ id:r.id, company:r.campaign.industry ? (r.company||'Draft registration') : (r.company||'Draft registration'),
+    channel: shortChannel(r.channelType), statusKey:'draft', state:'S1', step:'Not yet submitted',
+    date: todayStr(), snapshot: JSON.parse(JSON.stringify(r)) });
+  showDashboard();
 }
 
 function submitS1() {
@@ -558,10 +720,10 @@ function submitS1() {
 
   if (errs.length) { document.getElementById('s1-errs').innerHTML = errs.map(e=>`<div class="field-error">• ${e}</div>`).join(''); return; }
 
-  r.campaign = { messageDesc:g('f-desc'), exampleMsg:g('f-example'), homepageUrl:g('f-home'), privacyUrl:g('f-privacy'), optinUrl:g('f-optin'), termsUrl:g('f-terms'), optinScreenshot:g('f-screenshot'), industry:document.getElementById('f-industry').value, msgFrequency:g('f-freq'), estVolume:g('f-vol'), supportUrl:g('f-support'), directLender:!!document.getElementById('f-lender')?.checked, ageGate:!!document.getElementById('f-agegate')?.checked, embeddedPhone:!!document.getElementById('f-phone')?.checked };
-  r.autoApproved = Math.random() > 0.3;
+  captureS1();
+  r.autoApproved = DEMO.audit === 'random' ? (Math.random() > 0.3) : (DEMO.audit === 'auto');
   r.cycleCount++;
-  emit('REGISTRATION_SUBMITTED', { registration_id:r.id, channel_type:r.channelType });
+  emit('REGISTRATION_SUBMITTED', { registration_id:r.id, channel_type:r.channelType, org_id:'ORG-DEMO' });
   go('S2');
 }
 
@@ -581,24 +743,26 @@ function renderS2() {
   if (!r.autoApproved) setTimeout(()=>{ const el=document.getElementById('step-body'); if(el) el.querySelector('.font-semibold').textContent='Human review in progress…'; }, 1500);
   setTimeout(() => {
     r.auditFeedback = genAudit(r);
-    r.cnpSuggestion = cnpFor(r.channelType);
-    emit('AUDIT_FEEDBACK_AVAILABLE', { registration_id:r.id, auto_approved:r.autoApproved, cnp_suggestion:r.cnpSuggestion, items:r.auditFeedback.length });
+    r.cnpSuggestion = cnpFor(r.channelType, r.campaign?.industry);
+    emit('AUDIT_FEEDBACK_AVAILABLE', { registration_id:r.id, auto_approved:r.autoApproved, cnp_suggestion:r.cnpSuggestion, feedback_items_presented:r.auditFeedback.length });
     go('S3');
   }, r.autoApproved ? 2000 : 3500);
 }
 
-function cnpFor(ch) {
-  return { '10DLC':'Twilio / Sinch', 'TFN (Toll-Free)':'Bandwidth / Vonage', 'Short Code':'Syniverse' }[ch] || 'Twilio';
+function cnpFor(ch, industry) {
+  const base = { '10DLC':'Twilio / Sinch', 'TFN (Toll-Free)':'Bandwidth / Vonage', 'Short Code':'Syniverse' }[ch] || 'Twilio';
+  return industry ? `${base}` : base;  // suggestion keyed on channel; rationale text shows industry+volume in S3
 }
 
 function genAudit(r) {
   const c = r.campaign; const items = [];
-  if ((c.exampleMsg||'').length < 30) items.push({ sev:'error', desc:'Example message is too brief', rec:'Provide a complete example that shows actual content, an opt-out instruction, and message frequency.' });
-  if (!(c.exampleMsg||'').toLowerCase().includes('stop')) items.push({ sev:'warn', desc:'Opt-out instruction missing from example', rec:'Carrier best practice: include "Reply STOP to opt out" in your example message.' });
-  if (c.directLender) items.push({ sev:'warn', desc:'TCPA compliance check triggered', rec:'You flagged this as a Direct Lender campaign. Ensure messages include mandatory TCPA compliance language and a clear opt-out.' });
-  if (c.ageGate) items.push({ sev:'warn', desc:'Age verification language required', rec:'You flagged Age Gate Required. Verify your opt-in flow and example messages include age verification language.' });
-  if (!c.directLender && !c.ageGate) items.push({ sev:'info', desc:'Optional fields not completed', rec:'Adding Direct Lender, Age Gate, and keyword responder (HELP/STOP/START) responses can improve your carrier approval rate.' });
-  items.push({ sev:'info', desc:'Keyword responder copy not provided', rec:'Consider adding HELP and STOP auto-response text. Not required, but recommended.' });
+  if ((c.exampleMsg||'').length < 30) items.push({ sev:'error', desc:'Example message is too brief', rec:'Provide a complete example that shows actual content, an opt-out instruction, and message frequency.', addressed:false });
+  if (!(c.exampleMsg||'').toLowerCase().includes('stop')) items.push({ sev:'warn', desc:'Opt-out instruction missing from example', rec:'Carrier best practice: include "Reply STOP to opt out" in your example message.', addressed:false });
+  if (c.directLender) items.push({ sev:'warn', desc:'TCPA compliance check triggered', rec:'You flagged this as a Direct Lender campaign. Ensure messages include mandatory TCPA compliance language and a clear opt-out.', addressed:false });
+  if (c.ageGate) items.push({ sev:'warn', desc:'Age verification language required', rec:'You flagged Age Gate Required. Verify your opt-in flow and example messages include age verification language.', addressed:false });
+  // Keyword responder finding only when all three responder fields are blank.
+  if (!(c.kwOptin||c.kwOptout||c.kwHelp)) items.push({ sev:'info', desc:'Keyword responder copy not provided', rec:'Add START, STOP, and HELP auto-response text. Not required, but improves carrier approval rates.', addressed:false });
+  if (!c.directLender && !c.ageGate && !items.length) items.push({ sev:'info', desc:'No issues found', rec:'Your campaign looks complete. You can proceed to brand information.', addressed:false });
   return items;
 }
 
@@ -617,11 +781,19 @@ function renderS3() {
         <div class="text-sm font-semibold text-gray-700">${r.auditFeedback.length} finding${r.auditFeedback.length!==1?'s':''}</div>
         <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${r.autoApproved?'bg-green-50 text-green-700':'bg-purple-50 text-purple-700'}">${r.autoApproved?'Automated review':'Human reviewed'}</span>
       </div>
-      ${r.auditFeedback.map(f=>`
+      ${r.auditFeedback.map((f,i)=>`
         <div class="${cls[f.sev]}">
-          <div class="font-semibold text-gray-800 mb-0.5">${icon[f.sev]} ${f.desc}</div>
-          <div class="text-gray-600 text-xs">${f.rec}</div>
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="font-semibold text-gray-800 mb-0.5">${icon[f.sev]} ${f.desc}</div>
+              <div class="text-gray-600 text-xs">${f.rec}</div>
+            </div>
+            <label class="flex items-center gap-1.5 text-xs text-gray-500 whitespace-nowrap cursor-pointer mt-0.5">
+              <input type="checkbox" class="accent-blue-600" ${f.addressed?'checked':''} onchange="toggleAudit(${i}, this.checked)"/> Addressed
+            </label>
+          </div>
         </div>`).join('')}
+      <div class="text-xs text-gray-400 mt-1" id="audit-disp">${dispositionLine(r.auditFeedback)}</div>
     </div>
 
     <div class="card p-5 mb-6">
@@ -646,13 +818,35 @@ function renderS3() {
   `);
 }
 
+function dispositionLine(items) {
+  const total = items.length, addressed = items.filter(x=>x.addressed).length;
+  return `Disposition: ${addressed} addressed · ${total-addressed} waived · ${total} presented`;
+}
+function toggleAudit(i, val) {
+  flow.reg.auditFeedback[i].addressed = val;
+  const el = document.getElementById('audit-disp'); if (el) el.textContent = dispositionLine(flow.reg.auditFeedback);
+}
+function auditDisposition() {
+  const items = flow.reg.auditFeedback || [];
+  return { feedback_items_presented: items.length, feedback_items_addressed: items.filter(x=>x.addressed).length, feedback_items_waived: items.filter(x=>!x.addressed).length };
+}
+
 function showCnpOverride() { document.getElementById('cnp-override-form').style.display='block'; }
 function saveCnpOverride() {
   const v = document.getElementById('cnp-input').value.trim();
   if (v) { flow.reg.cnpSuggestion=v; flow.reg.cnpOverridden=true; document.getElementById('cnp-val').textContent=v; document.getElementById('cnp-note').style.display='block'; document.getElementById('cnp-override-form').style.display='none'; document.getElementById('cnp-override-area').innerHTML=`<span class="text-sm font-semibold text-amber-600">${v} <span class="font-normal text-xs">(overridden)</span></span>`; }
 }
-function resubmitCampaign() { flow.reg.cycleCount++; emit('CAMPAIGN_RESUBMITTED', { registration_id:flow.reg.id, cycle_count:flow.reg.cycleCount }); go('S1'); }
-function proceedToBrand() { emit('PROCEEDING_TO_BRAND', { registration_id:flow.reg.id, cnp_selected:flow.reg.cnpSuggestion, cnp_overridden:flow.reg.cnpOverridden }); go('S4'); }
+function resubmitCampaign() {
+  flow.reg.cycleCount++;
+  flow.reg.feedbackDisposition = auditDisposition();
+  emit('CAMPAIGN_RESUBMITTED', { registration_id:flow.reg.id, cycle_count:flow.reg.cycleCount, ...auditDisposition() });
+  go('S1');
+}
+function proceedToBrand() {
+  flow.reg.feedbackDisposition = auditDisposition();
+  emit('PROCEEDING_TO_BRAND', { registration_id:flow.reg.id, cnp_selected:flow.reg.cnpSuggestion, cnp_overridden:flow.reg.cnpOverridden, ...auditDisposition() });
+  go('S4');
+}
 
 // ─────────────────────────────────────────────
 //  S4 — Brand Information
@@ -660,7 +854,10 @@ function proceedToBrand() { emit('PROCEEDING_TO_BRAND', { registration_id:flow.r
 function renderS4() {
   const r = flow.reg; const b = r.brand||{};
   setBody(`
-    ${hdr(4,'Brand information','We need to verify your company before submitting to the carrier registry. Your EIN will be checked against IRS records.')}
+    <div class="flex items-start justify-between mb-2">
+      ${hdr(4,'Brand information','We need to verify your company before submitting to the carrier registry. Your EIN will be checked against IRS records.')}
+      <button class="demo-fill" onclick="fillTestS4()" title="Demo: autofill every field & verify EIN">⚡ Fill test data</button>
+    </div>
 
     <div class="card p-5 mb-5">
       <div class="space-y-4">
@@ -712,6 +909,14 @@ function verifyEIN() {
   }, 1200);
 }
 
+function fillTestS4() {
+  const r = flow.reg;
+  const industry = r.campaign?.industry || 'E-commerce';
+  r.brand = sampleBrand(r.company || 'Acme Corporation', industry, true);
+  einOk = true;
+  renderS4();
+}
+
 function submitBrand() {
   const r = flow.reg; const g = id=>(document.getElementById(id)?.value||'').trim();
   const errs=[];
@@ -746,9 +951,9 @@ function renderS5() {
   `);
   if (!r.autoApproved) setTimeout(()=>{ const el=document.getElementById('s5-lbl'); if(el) el.textContent='Human review in progress…'; }, 1200);
   setTimeout(()=>{
-    const pass = r.autoApproved || Math.random() > 0.35;
+    const pass = DEMO.brand === 'random' ? (r.autoApproved || Math.random() > 0.35) : (DEMO.brand === 'pass');
     if (pass) { emit('BRAND_VALIDATED',{registration_id:r.id,brand_id:r.brand.brandId}); go('S7'); }
-    else { r.brandFeedback=[{ sev:'error', desc:'Brand name / website mismatch', rec:`Your DBA "${r.brand.dba}" couldn't be confirmed against your website URL. Make sure the brand name shown on your homepage exactly matches your DBA.`}, { sev:'warn', desc:'Business type needs confirmation', rec:'Your business type may require additional documentation. Ensure your company is registered with state authorities under the declared type.'}]; emit('BRAND_FEEDBACK_PROVIDED',{registration_id:r.id,brand_id:r.brand.brandId}); go('S6'); }
+    else { r.brandFeedback=[{ sev:'error', desc:'Brand name / website mismatch', rec:`Your DBA "${r.brand.dba}" couldn't be confirmed against your website URL. Make sure the brand name shown on your homepage exactly matches your DBA.`, addressed:false}, { sev:'warn', desc:'Business type needs confirmation', rec:'Your business type may require additional documentation. Ensure your company is registered with state authorities under the declared type.', addressed:false}]; emit('BRAND_FEEDBACK_PROVIDED',{registration_id:r.id,brand_id:r.brand.brandId}); go('S6'); }
   }, r.autoApproved ? 1800 : 3200);
 }
 
@@ -764,7 +969,15 @@ function renderS6() {
     <div class="open-q">⚠ Note: If you change your EIN or legal name, this may require a new brand registration at the carrier registry rather than an update. Contact support if you're unsure.</div>
 
     <div class="card p-5 mb-4">
-      ${(r.brandFeedback||[]).map(f=>`<div class="${cls[f.sev]}"><div class="font-semibold text-gray-800 mb-0.5">${f.desc}</div><div class="text-gray-600 text-xs">${f.rec}</div></div>`).join('')}
+      ${(r.brandFeedback||[]).map((f,i)=>`<div class="${cls[f.sev]}">
+        <div class="flex items-start justify-between gap-3">
+          <div><div class="font-semibold text-gray-800 mb-0.5">${f.desc}</div><div class="text-gray-600 text-xs">${f.rec}</div></div>
+          <label class="flex items-center gap-1.5 text-xs text-gray-500 whitespace-nowrap cursor-pointer mt-0.5">
+            <input type="checkbox" class="accent-blue-600" ${f.addressed?'checked':''} onchange="toggleBrand(${i}, this.checked)"/> Addressed
+          </label>
+        </div>
+      </div>`).join('')}
+      <div class="text-xs text-gray-400 mt-1" id="brand-disp">${dispositionLine(r.brandFeedback||[])}</div>
     </div>
 
     <div class="flex gap-3">
@@ -775,8 +988,25 @@ function renderS6() {
   `);
 }
 
-function resubmitBrand() { flow.reg.brandCycleCount++; emit('BRAND_RESUBMITTED',{registration_id:flow.reg.id,brand_id:flow.reg.brand.brandId,cycle_count:flow.reg.brandCycleCount}); go('S4'); }
-function proceedToRegistry() { emit('PROCEEDING_TO_REGISTRY',{registration_id:flow.reg.id,brand_id:flow.reg.brand.brandId,feedback_waived:true}); go('S7'); }
+function toggleBrand(i, val) {
+  flow.reg.brandFeedback[i].addressed = val;
+  const el = document.getElementById('brand-disp'); if (el) el.textContent = dispositionLine(flow.reg.brandFeedback);
+}
+function brandDisposition() {
+  const items = flow.reg.brandFeedback || [];
+  return { feedback_items_presented: items.length, feedback_items_addressed: items.filter(x=>x.addressed).length, feedback_items_waived: items.filter(x=>!x.addressed).length };
+}
+function resubmitBrand() {
+  flow.reg.brandCycleCount++;
+  flow.reg.brandFeedbackDisposition = brandDisposition();
+  emit('BRAND_RESUBMITTED',{registration_id:flow.reg.id,brand_id:flow.reg.brand.brandId,cycle_count:flow.reg.brandCycleCount,...brandDisposition()});
+  go('S4');
+}
+function proceedToRegistry() {
+  flow.reg.brandFeedbackDisposition = brandDisposition();
+  emit('PROCEEDING_TO_REGISTRY',{registration_id:flow.reg.id,brand_id:flow.reg.brand.brandId,...brandDisposition()});
+  go('S7');
+}
 
 // ─────────────────────────────────────────────
 //  S7 — Registry Submission
@@ -797,11 +1027,11 @@ function renderS7() {
   setTimeout(()=>{
     r.submissionId = 'SUB-'+Math.random().toString(36).slice(2,9).toUpperCase();
     r.targetRegistry = registry;
-    const ok = Math.random() > 0.1;
+    const ok = DEMO.registry === 'random' ? (Math.random() > 0.1) : (DEMO.registry === 'success');
     if (ok) { emit('REGISTRY_SUBMITTED',{registration_id:r.id,registry,submission_id:r.submissionId,channel_type:r.channelType}); go('P2'); }
     else {
-      emit('REGISTRY_SUBMISSION_FAILED',{registration_id:r.id,error:'TIMEOUT',retry:1});
-      const el=document.getElementById('s7-lbl'); if(el) el.textContent='Timeout — retrying…';
+      emit('REGISTRY_SUBMISSION_FAILED',{registration_id:r.id,error_code:'REGISTRY_TIMEOUT',retry_count:1});
+      const el=document.getElementById('s7-lbl'); if(el) el.textContent='Timeout — retrying with backoff…';
       setTimeout(()=>{ emit('REGISTRY_SUBMITTED',{registration_id:r.id,registry,submission_id:r.submissionId,channel_type:r.channelType}); go('P2'); }, 2000);
     }
   }, 2500);
@@ -814,10 +1044,9 @@ function renderP2() {
   const r = flow.reg;
   document.getElementById('close-btn').style.display = 'none';
 
-  // Update dashboard record
+  // Persist dashboard record
   const existing = regs.find(x => x.id === r.id);
-  if (existing) { existing.statusKey='registered'; existing.state='P2'; existing.step='Registered'; }
-  else { regs.unshift({ id:r.id, company:r.brand?.legalName||'New Registration', channel:r.channelType, statusKey:'registered', state:'P2', step:'Registered', date:new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'}) }); }
+  upsertReg({ id:r.id, company:r.brand?.legalName||r.company||'New Registration', channel:shortChannel(r.channelType), statusKey:'registered', state:'P2', step:'Registered', date: existing?.date || todayStr(), snapshot: JSON.parse(JSON.stringify(r)) });
 
   setBody(`
     <div class="card p-8 text-center">
@@ -879,9 +1108,52 @@ function emit(event, payload) {
 }
 
 // ─────────────────────────────────────────────
+//  DEMO BANNER + CONTROLS
+// ─────────────────────────────────────────────
+function dismissBanner() {
+  document.getElementById('demo-banner').style.display = 'none';
+  try { localStorage.setItem('volt_banner_dismissed','1'); } catch(e){}
+}
+function initBanner() {
+  let dismissed = false;
+  try { dismissed = localStorage.getItem('volt_banner_dismissed') === '1'; } catch(e){}
+  document.getElementById('demo-banner').style.display = dismissed ? 'none' : 'flex';
+}
+
+let demoPanelOpen = false;
+function applyDemoPanelState() {
+  document.getElementById('demo-panel-body').style.display = demoPanelOpen ? 'block' : 'none';
+  document.getElementById('demo-caret').textContent = demoPanelOpen ? '▾' : '▸';
+}
+function toggleDemoPanel() { demoPanelOpen = !demoPanelOpen; applyDemoPanelState(); }
+function renderDemoSegs() {
+  document.querySelectorAll('.demo-seg').forEach(seg => {
+    const key = seg.getAttribute('data-key');
+    seg.querySelectorAll('button').forEach(btn => {
+      const on = DEMO[key] === btn.getAttribute('data-val');
+      btn.className = on ? 'on' : '';
+    });
+  });
+}
+function initDemoControls() {
+  document.querySelectorAll('.demo-seg').forEach(seg => {
+    const key = seg.getAttribute('data-key');
+    seg.querySelectorAll('button').forEach(btn => {
+      btn.onclick = () => { DEMO[key] = btn.getAttribute('data-val'); renderDemoSegs(); };
+    });
+  });
+  renderDemoSegs();
+}
+
+// ─────────────────────────────────────────────
 //  BOOT
 // ─────────────────────────────────────────────
-window.onload = showDashboard;
+window.onload = function() {
+  initBanner();
+  initDemoControls();
+  applyDemoPanelState();
+  showDashboard();
+};
 </script>
 </body>
 </html>
