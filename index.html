@@ -3,697 +3,816 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Volt — Phase 1 Registration</title>
+<title>Volt — Register</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   :root {
-    --volt-bg: #0f1117;
-    --volt-surface: #1a1d27;
-    --volt-border: #2a2d3a;
-    --volt-accent: #6c63ff;
-    --volt-accent2: #00d4aa;
-    --volt-warn: #f5a623;
-    --volt-error: #e74c3c;
-    --volt-text: #e8eaf0;
-    --volt-muted: #8b8fa8;
+    --volt-blue: #1a6bfa;
+    --volt-blue-dark: #1558d6;
+    --volt-blue-light: #e8f0fe;
+    --volt-yellow: #f5c518;
+    --volt-green: #16a34a;
+    --volt-green-bg: #dcfce7;
+    --volt-orange: #d97706;
+    --volt-orange-bg: #fef3c7;
+    --volt-gray: #6b7280;
+    --volt-gray-bg: #f3f4f6;
+    --volt-red: #dc2626;
+    --volt-red-bg: #fee2e2;
+    --volt-border: #e5e7eb;
   }
-  body { background: var(--volt-bg); color: var(--volt-text); font-family: 'Inter', system-ui, sans-serif; }
-  .card { background: var(--volt-surface); border: 1px solid var(--volt-border); border-radius: 12px; }
-  .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-  .pill-user { background: #1e3a5f; color: #7eb8f7; }
-  .pill-system { background: #1f3d2f; color: #6fdfaa; }
-  .pill-reviewer { background: #3d2f1f; color: #f0a860; }
-  .btn { cursor: pointer; padding: 9px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: all 0.15s; border: none; }
-  .btn-primary { background: var(--volt-accent); color: white; }
-  .btn-primary:hover { background: #7c74ff; }
-  .btn-secondary { background: var(--volt-border); color: var(--volt-text); }
-  .btn-secondary:hover { background: #3a3d4f; }
-  .btn-danger { background: #3d1515; color: #f77; border: 1px solid #5a1a1a; }
-  .btn-danger:hover { background: #5a1515; }
-  .input { background: var(--volt-bg); border: 1px solid var(--volt-border); color: var(--volt-text); border-radius: 8px; padding: 9px 12px; font-size: 14px; width: 100%; outline: none; transition: border-color 0.15s; }
-  .input:focus { border-color: var(--volt-accent); }
-  .input-error { border-color: var(--volt-error) !important; }
-  select.input option { background: var(--volt-surface); }
-  .label { font-size: 12px; color: var(--volt-muted); margin-bottom: 4px; font-weight: 500; }
-  .state-node { cursor: pointer; transition: all 0.15s; }
-  .state-node.active { box-shadow: 0 0 0 2px var(--volt-accent), 0 0 20px rgba(108,99,255,0.3); }
-  .state-node.completed { box-shadow: 0 0 0 2px var(--volt-accent2); }
-  .state-node.terminal { box-shadow: 0 0 0 2px var(--volt-error); }
-  .webhook-item { font-size: 11px; font-family: 'Courier New', monospace; background: #0d0f18; border: 1px solid #1e2235; border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; }
-  .progress-bar-fill { height: 4px; background: linear-gradient(90deg, var(--volt-accent), var(--volt-accent2)); border-radius: 2px; transition: width 0.4s ease; }
-  .tab { padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--volt-muted); transition: all 0.15s; }
-  .tab.active { background: var(--volt-border); color: var(--volt-text); }
-  .feedback-item { border-left: 3px solid; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-bottom: 8px; font-size: 13px; }
-  .feedback-error { border-color: var(--volt-error); background: rgba(231,76,60,0.08); }
-  .feedback-warn { border-color: var(--volt-warn); background: rgba(245,166,35,0.08); }
-  .feedback-info { border-color: #3b82f6; background: rgba(59,130,246,0.08); }
-  .spin { animation: spin 1s linear infinite; }
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  .fade-in { animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  .badge-auto { background: #1a2e1a; color: #6fdfaa; border: 1px solid #2a4a2a; font-size: 10px; padding: 2px 7px; border-radius: 4px; }
-  .badge-open { background: #2e2a1a; color: #f0a860; border: 1px solid #4a3a1a; font-size: 10px; padding: 2px 7px; border-radius: 4px; }
-  .tooltip { position: relative; }
-  .tooltip .tip { display: none; position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%); background: #1a1d27; border: 1px solid #2a2d3a; padding: 6px 10px; border-radius: 6px; font-size: 11px; white-space: nowrap; z-index: 10; color: var(--volt-muted); }
-  .tooltip:hover .tip { display: block; }
+  body { background: #f9fafb; color: #111827; font-family: -apple-system, 'Inter', system-ui, sans-serif; }
+  .nav-link { color: #374151; font-size: 14px; font-weight: 500; padding: 6px 4px; cursor: pointer; border-bottom: 2px solid transparent; }
+  .nav-link:hover { color: #111827; }
+  .nav-link.active { color: #111827; border-bottom-color: var(--volt-blue); }
+  .btn-primary { background: var(--volt-blue); color: white; padding: 9px 18px; border-radius: 8px; font-weight: 600; font-size: 14px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary:hover { background: var(--volt-blue-dark); }
+  .btn-secondary { background: white; color: #374151; padding: 8px 16px; border-radius: 8px; font-weight: 500; font-size: 14px; border: 1px solid var(--volt-border); cursor: pointer; }
+  .btn-secondary:hover { background: #f9fafb; }
+  .status-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 500; }
+  .status-approved { color: var(--volt-green); }
+  .status-pending-brand { color: var(--volt-gray); }
+  .status-pending-campaign { color: var(--volt-orange); }
+  .status-blocked { color: var(--volt-red); }
+  .status-draft { color: #9ca3af; }
+  .status-submitting { color: var(--volt-blue); }
+  .table-row { border-top: 1px solid var(--volt-border); }
+  .table-row:hover { background: #f9fafb; cursor: pointer; }
+  .card { background: white; border: 1px solid var(--volt-border); border-radius: 12px; }
+  .tab { font-size: 14px; font-weight: 500; padding: 10px 4px; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; }
+  .tab.active { color: #111827; border-bottom-color: var(--volt-blue); }
+  .input { border: 1px solid var(--volt-border); border-radius: 8px; padding: 9px 12px; font-size: 14px; width: 100%; outline: none; color: #111827; background: white; }
+  .input:focus { border-color: var(--volt-blue); box-shadow: 0 0 0 3px rgba(26,107,250,0.12); }
+  .label { font-size: 13px; color: #374151; margin-bottom: 5px; font-weight: 500; }
+  .sidebar-label { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; }
+  .state-step { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; }
+  .step-dot { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+  .step-dot-done { background: var(--volt-blue); color: white; }
+  .step-dot-active { background: var(--volt-blue); color: white; box-shadow: 0 0 0 4px rgba(26,107,250,0.2); }
+  .step-dot-idle { background: #e5e7eb; color: #9ca3af; }
+  .step-line { width: 2px; height: 20px; background: #e5e7eb; margin-left: 9px; }
+  .step-line-done { background: var(--volt-blue); }
+  .fade-in { animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .spin { animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .feedback-error { border-left: 3px solid #ef4444; background: #fef2f2; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 8px; font-size: 13px; }
+  .feedback-warn { border-left: 3px solid #f59e0b; background: #fffbeb; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 8px; font-size: 13px; }
+  .feedback-info { border-left: 3px solid #3b82f6; background: #eff6ff; padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 8px; font-size: 13px; }
+  .progress-track { height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--volt-blue); border-radius: 4px; transition: width 0.4s ease; }
+  select.input option { background: white; }
+  .close-btn { color: #ef4444; border-color: #fca5a5; background: #fff5f5; }
+  .close-btn:hover { background: #fee2e2; }
+  .inline-err { font-size: 12px; color: #ef4444; margin-top: 3px; }
+  /* Status bar segments */
+  .seg { height: 100%; transition: width 0.5s ease; }
 </style>
 </head>
-<body class="min-h-screen">
+<body>
 
-<!-- TOP NAV -->
-<nav class="flex items-center justify-between px-6 py-4 border-b border-[#2a2d3a]">
-  <div class="flex items-center gap-3">
-    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#6c63ff] to-[#00d4aa] flex items-center justify-center text-white font-black text-sm">V</div>
-    <span class="font-bold text-lg tracking-tight">Volt</span>
-    <span class="text-[#8b8fa8] text-sm ml-1">/ Registration</span>
-  </div>
-  <div class="flex items-center gap-3">
-    <span id="phase-badge" class="pill pill-system">Phase 1 — Audit</span>
-    <span id="channel-badge" class="pill" style="background:#1e2035;color:#a0a8c8;display:none"></span>
-    <button class="btn btn-danger text-xs px-3 py-1" onclick="closeRegistration()" id="close-btn" style="display:none">Close Registration</button>
+<!-- ===================== NAV ===================== -->
+<nav id="main-nav" class="bg-white border-b border-[#e5e7eb] px-6 sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto flex items-center justify-between h-14">
+    <div class="flex items-center gap-8">
+      <!-- Volt Logo -->
+      <div class="flex items-center gap-2 mr-4 cursor-pointer" onclick="showDashboard()">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <path d="M14 2L26 8V20L14 26L2 20V8L14 2Z" fill="#1a1a2e" stroke="#1a1a2e" stroke-width="0"/>
+          <path d="M14 2L26 8V20L14 26L2 20V8L14 2Z" fill="#111827"/>
+          <path d="M11 9L8 19L14 16L20 19L17 9L14 14L11 9Z" fill="#f5c518"/>
+        </svg>
+        <span class="font-bold text-[15px] text-gray-900 tracking-tight">Volt</span>
+      </div>
+      <div class="flex items-center gap-6">
+        <span class="nav-link active" onclick="showDashboard()">Register</span>
+        <span class="nav-link">Messaging</span>
+        <span class="nav-link">Insights</span>
+        <span class="nav-link">Verify</span>
+        <span class="nav-link">Documentation</span>
+        <span class="nav-link">Access Management</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="white"><path d="M2 7l4 4 6-6" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <span class="text-sm text-gray-600 cursor-pointer hover:text-gray-900">Sign out</span>
+    </div>
   </div>
 </nav>
 
-<div class="flex h-[calc(100vh-65px)]">
+<!-- ===================== DASHBOARD VIEW ===================== -->
+<div id="dashboard-view" class="max-w-7xl mx-auto px-6 py-8">
 
-  <!-- LEFT SIDEBAR — State Machine -->
-  <aside class="w-52 border-r border-[#2a2d3a] p-4 overflow-y-auto flex-shrink-0">
-    <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-3">States</div>
-    <div id="state-nav" class="space-y-1"></div>
+  <h1 class="text-3xl font-bold text-gray-900 mb-6">Register</h1>
 
-    <div class="mt-6">
-      <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-3">Progress</div>
-      <div class="bg-[#0f1117] rounded-lg h-1.5 overflow-hidden">
-        <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+  <!-- Stats Card -->
+  <div class="card p-6 mb-6">
+    <div class="flex items-baseline gap-3 mb-4">
+      <span class="text-5xl font-bold text-gray-900" id="brand-count">0</span>
+      <span class="bg-blue-100 text-blue-700 text-sm font-semibold px-3 py-1 rounded-full">Managed Brands</span>
+    </div>
+    <div class="text-sm text-gray-500 mb-5">Active billing count <span class="inline-block w-4 h-4 rounded-full border border-gray-400 text-center text-xs leading-4 cursor-help" title="Brands currently billed">?</span></div>
+
+    <!-- Status Bar -->
+    <div class="flex rounded-lg overflow-hidden h-3 mb-4" id="status-bar">
+      <div class="seg bg-red-400" id="seg-blocked" style="width:0%"></div>
+      <div class="seg bg-gray-400" id="seg-brand" style="width:0%"></div>
+      <div class="seg bg-amber-400" id="seg-campaign" style="width:0%"></div>
+      <div class="seg bg-blue-500" id="seg-registered" style="width:0%"></div>
+    </div>
+
+    <div class="flex gap-6 text-sm" id="stats-row">
+      <div><span class="font-bold text-lg text-gray-900" id="stat-total">0</span><div class="text-gray-500">Total Registrations</div></div>
+      <div class="border-l border-gray-200 pl-6"><span class="font-bold text-lg text-red-500" id="stat-blocked">0</span><div class="flex items-center gap-1.5 text-gray-500"><span class="w-2 h-2 rounded-full bg-red-400 inline-block"></span>Blocked</div></div>
+      <div class="border-l border-gray-200 pl-6"><span class="font-bold text-lg text-gray-500" id="stat-brand">0</span><div class="flex items-center gap-1.5 text-gray-500"><span class="w-2 h-2 rounded-full bg-gray-400 inline-block"></span>Brands Pending</div></div>
+      <div class="border-l border-gray-200 pl-6"><span class="font-bold text-lg text-amber-500" id="stat-campaign">0</span><div class="flex items-center gap-1.5 text-gray-500"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>Campaigns Pending</div></div>
+      <div class="border-l border-gray-200 pl-6"><span class="font-bold text-lg text-blue-600" id="stat-registered">0</span><div class="flex items-center gap-1.5 text-gray-500"><span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>Successfully Registered</div></div>
+    </div>
+  </div>
+
+  <!-- Tabs + Table -->
+  <div class="card overflow-hidden">
+    <div class="flex items-center justify-between px-5 pt-3 pb-0 border-b border-gray-200">
+      <div class="flex gap-6">
+        <div class="tab active" id="tab-brands" onclick="switchMainTab('brands')">Brands</div>
+        <div class="tab" id="tab-campaigns" onclick="switchMainTab('campaigns')">Campaigns</div>
       </div>
-      <div id="progress-label" class="text-xs text-[#8b8fa8] mt-2">Not started</div>
+      <button class="btn-primary" onclick="startNewRegistration()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+        Create new brand
+      </button>
     </div>
 
-    <div class="mt-6">
-      <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-3">Artifact</div>
-      <div id="artifact-summary" class="text-xs text-[#8b8fa8] space-y-1.5"></div>
+    <!-- Search + Filter -->
+    <div class="flex items-center gap-3 px-5 py-3 border-b border-gray-100">
+      <div class="relative">
+        <svg class="absolute left-3 top-2.5 text-gray-400" width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="#9ca3af" stroke-width="1.5"/><path d="M10.5 10.5l3 3" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input class="input pl-9 w-64 text-sm" placeholder="Search brands..." id="search-input" oninput="renderTable()" />
+      </div>
+      <div class="relative">
+        <select class="input w-44 text-sm pr-8 appearance-none" id="filter-status" onchange="renderTable()">
+          <option value="">All statuses</option>
+          <option value="approved">Successfully Registered</option>
+          <option value="pending-campaign">Campaigns Pending</option>
+          <option value="pending-brand">Brands Pending</option>
+          <option value="draft">Draft</option>
+          <option value="blocked">Blocked</option>
+        </select>
+        <svg class="absolute right-3 top-3 pointer-events-none text-gray-400" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="relative">
+        <select class="input w-36 text-sm pr-8 appearance-none" id="filter-channel" onchange="renderTable()">
+          <option value="">All channels</option>
+          <option value="10DLC">10DLC</option>
+          <option value="TFN">TFN</option>
+          <option value="Short Code">Short Code</option>
+        </select>
+        <svg class="absolute right-3 top-3 pointer-events-none text-gray-400" width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
     </div>
-  </aside>
 
-  <!-- MAIN CONTENT -->
-  <main class="flex-1 overflow-y-auto p-6">
-    <div id="main-content" class="max-w-2xl mx-auto fade-in"></div>
-  </main>
+    <!-- Table -->
+    <table class="w-full text-sm" id="brand-table">
+      <thead>
+        <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50">
+          <th class="text-left px-5 py-3 font-semibold">
+            <div class="flex items-center gap-1">Name
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 4l2-2 2 2M3 6l2 2 2-2" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+          </th>
+          <th class="text-left px-5 py-3 font-semibold">Channel</th>
+          <th class="text-left px-5 py-3 font-semibold">
+            <div class="flex items-center gap-1">Status
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 4l2-2 2 2M3 6l2 2 2-2" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+          </th>
+          <th class="text-left px-5 py-3 font-semibold">State</th>
+          <th class="text-left px-5 py-3 font-semibold">
+            <div class="flex items-center gap-1">Date
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 4l2-2 2 2M3 6l2 2 2-2" stroke="#9ca3af" stroke-width="1.2" stroke-linecap="round"/></svg>
+            </div>
+          </th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <div id="empty-state" class="py-12 text-center text-gray-400 text-sm" style="display:none">No registrations match your filters</div>
+  </div>
+</div>
 
-  <!-- RIGHT SIDEBAR — Webhooks & Log -->
-  <aside class="w-64 border-l border-[#2a2d3a] p-4 overflow-y-auto flex-shrink-0">
-    <div class="flex gap-2 mb-4">
-      <div class="tab active" id="tab-webhooks" onclick="switchTab('webhooks')">Webhooks</div>
-      <div class="tab" id="tab-log" onclick="switchTab('log')">Event Log</div>
+<!-- ===================== REGISTRATION FLOW VIEW ===================== -->
+<div id="flow-view" style="display:none" class="min-h-screen bg-white">
+
+  <!-- Flow Nav -->
+  <div class="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-4">
+    <button class="btn-secondary text-sm flex items-center gap-1.5" onclick="showDashboard()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L3 7l6 5" stroke="#374151" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to Register
+    </button>
+    <div class="text-sm text-gray-400">/</div>
+    <div class="text-sm font-medium text-gray-700" id="flow-breadcrumb">New Registration</div>
+    <div class="ml-auto flex items-center gap-3">
+      <span id="flow-channel-badge" class="text-xs font-semibold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full" style="display:none"></span>
+      <button class="btn-secondary text-xs close-btn px-3 py-1.5" onclick="closeRegistration()" id="close-btn" style="display:none">Close Registration</button>
     </div>
-    <div id="webhook-list"></div>
-    <div id="log-list" style="display:none"></div>
-  </aside>
+  </div>
 
+  <div class="flex" style="height: calc(100vh - 113px)">
+
+    <!-- Steps sidebar -->
+    <aside class="w-56 border-r border-gray-200 p-5 overflow-y-auto flex-shrink-0 bg-gray-50">
+      <div class="sidebar-label mb-4">Phase 1 — Audit</div>
+      <div id="flow-steps"></div>
+      <div class="mt-6">
+        <div class="sidebar-label mb-2">Progress</div>
+        <div class="progress-track">
+          <div class="progress-fill" id="flow-progress" style="width:0%"></div>
+        </div>
+        <div class="text-xs text-gray-400 mt-1.5" id="flow-progress-label">Not started</div>
+      </div>
+      <div class="mt-6" id="flow-artifact-box">
+        <div class="sidebar-label mb-2">Artifact</div>
+        <div id="flow-artifact" class="text-xs text-gray-400 space-y-1.5"></div>
+      </div>
+    </aside>
+
+    <!-- Main flow content -->
+    <main class="flex-1 overflow-y-auto p-8 bg-white">
+      <div id="flow-content" class="max-w-xl mx-auto"></div>
+    </main>
+
+    <!-- Webhook log -->
+    <aside class="w-64 border-l border-gray-200 p-4 overflow-y-auto flex-shrink-0 bg-gray-50">
+      <div class="sidebar-label mb-3">Webhook Log</div>
+      <div id="webhook-log"></div>
+    </aside>
+
+  </div>
 </div>
 
 <script>
 // ============================================================
-// STATE MACHINE DEFINITION
+//  SAMPLE DATA
 // ============================================================
-const STATES = {
-  S1: { id:'S1', name:'Draft', label:'P1:S1 — Draft', actor:'User', flags:['start'], color:'#6c63ff' },
-  S2: { id:'S2', name:'Campaign Audit', label:'P1:S2 — Campaign Audit In Progress', actor:'System', flags:['auto','substates'], color:'#3b82f6' },
-  S3: { id:'S3', name:'Audit Feedback', label:'P1:S3 — Audit Feedback Presented', actor:'User', flags:[], color:'#6c63ff' },
-  S4: { id:'S4', name:'Brand Collection', label:'P1:S4 — Brand Collection', actor:'User', flags:[], color:'#6c63ff' },
-  S5: { id:'S5', name:'Brand Validation', label:'P1:S5 — Brand Validation', actor:'System', flags:['substates'], color:'#3b82f6' },
-  S6: { id:'S6', name:'Brand Feedback', label:'P1:S6 — Brand Feedback Provided', actor:'User', flags:['open'], color:'#f5a623' },
-  S7: { id:'S7', name:'Pending Registry', label:'P1:S7 — Pending Registry Submission', actor:'System', flags:['auto'], color:'#3b82f6' },
-  S8: { id:'S8', name:'Closed', label:'P1:S8 — Closed', actor:'terminal', flags:['terminal'], color:'#e74c3c' },
-  P2: { id:'P2', name:'Registry Submitted', label:'P2 — Registry Submitted', actor:'System', flags:[], color:'#00d4aa' },
+const SAMPLE_REGISTRATIONS = [
+  { id:'REG-A1B2C3', name:'Acme Corporation',       dba:'Acme',        channel:'10DLC',      statusKey:'approved',          state:'P2', date:'5/29/2026', ein:'12-3456789', industry:'E-commerce',  cycles:1, brand:'BRD-ACM01' },
+  { id:'REG-D4E5F6', name:'TechStart Inc.',          dba:'TechStart',   channel:'TFN',        statusKey:'pending-campaign',  state:'S3', date:'5/29/2026', ein:'98-7654321', industry:'Technology',  cycles:1, brand:null },
+  { id:'REG-G7H8I9', name:'GreenLeaf Health',        dba:'GreenLeaf',   channel:'Short Code', statusKey:'pending-brand',     state:'S4', date:'5/28/2026', ein:'55-1234567', industry:'Healthcare',  cycles:2, brand:null },
+  { id:'REG-J1K2L3', name:'FastFin Financial',       dba:'FastFin',     channel:'10DLC',      statusKey:'approved',          state:'P2', date:'5/28/2026', ein:'33-9876543', industry:'Finance',     cycles:1, brand:'BRD-FFN02' },
+  { id:'REG-M4N5O6', name:'Westside Roofing Co.',    dba:'Westside',    channel:'TFN',        statusKey:'draft',             state:'S1', date:'5/27/2026', ein:null,         industry:'Retail',      cycles:0, brand:null },
+  { id:'REG-P7Q8R9', name:'SunBright Solar',         dba:'SunBright',   channel:'Short Code', statusKey:'approved',          state:'P2', date:'5/27/2026', ein:'77-2345678', industry:'Technology',  cycles:1, brand:'BRD-SBS03' },
+  { id:'REG-S1T2U3', name:'Metro Transit Authority', dba:'Metro Transit',channel:'10DLC',     statusKey:'pending-brand',     state:'S5', date:'5/26/2026', ein:'44-3456789', industry:'Other',       cycles:2, brand:'BRD-MTA04' },
+  { id:'REG-V4W5X6', name:'NovaCare Medical Group',  dba:'NovaCare',    channel:'TFN',        statusKey:'blocked',           state:'S8', date:'5/26/2026', ein:'66-4567890', industry:'Healthcare',  cycles:3, brand:'BRD-NVM05' },
+  { id:'REG-Y7Z8A1', name:'QuickShip Logistics',     dba:'QuickShip',   channel:'10DLC',      statusKey:'pending-campaign',  state:'S2', date:'5/25/2026', ein:'11-5678901', industry:'E-commerce',  cycles:1, brand:null },
+  { id:'REG-B2C3D4', name:'Lakeside Realty Group',   dba:'Lakeside',    channel:'Short Code', statusKey:'approved',          state:'P2', date:'5/25/2026', ein:'22-6789012', industry:'Real Estate', cycles:1, brand:'BRD-LRG06' },
+  { id:'REG-E5F6G7', name:'BlueSky Airlines',        dba:'BlueSky',     channel:'10DLC',      statusKey:'approved',          state:'P2', date:'5/24/2026', ein:'99-7890123', industry:'Other',       cycles:1, brand:'BRD-BSA07' },
+  { id:'REG-H8I9J1', name:'ClearWater Utilities',    dba:'ClearWater',  channel:'TFN',        statusKey:'pending-brand',     state:'S6', date:'5/24/2026', ein:'88-8901234', industry:'Other',       cycles:2, brand:'BRD-CWU08' },
+  { id:'REG-K2L3M4', name:'Pinnacle Insurance',      dba:'Pinnacle',    channel:'Short Code', statusKey:'approved',          state:'P2', date:'5/23/2026', ein:'55-9012345', industry:'Finance',     cycles:1, brand:'BRD-PIN09' },
+];
+
+const STATUS_CONFIG = {
+  'approved':          { label:'Successfully Registered', dot:'bg-blue-500',  cls:'status-approved',         icon:'✓' },
+  'pending-campaign':  { label:'Campaigns Pending',       dot:'bg-amber-400', cls:'status-pending-campaign', icon:'●' },
+  'pending-brand':     { label:'Brands Pending',          dot:'bg-gray-400',  cls:'status-pending-brand',    icon:'●' },
+  'draft':             { label:'Draft',                   dot:'bg-gray-300',  cls:'status-draft',            icon:'○' },
+  'blocked':           { label:'Blocked',                 dot:'bg-red-400',   cls:'status-blocked',          icon:'✕' },
+  'submitting':        { label:'Submitting',              dot:'bg-blue-400',  cls:'status-submitting',       icon:'↑' },
 };
 
-const CHANNEL_TYPES = ['10DLC', 'TFN (Toll-Free)', 'Short Code'];
+const STATE_LABELS = { S1:'Draft', S2:'Audit In Progress', S3:'Audit Feedback', S4:'Brand Collection', S5:'Brand Validation', S6:'Brand Feedback', S7:'Pending Registry', S8:'Closed', P2:'Registered' };
+
+const CHANNEL_BADGE = {
+  '10DLC':      'bg-purple-50 text-purple-700',
+  'TFN':        'bg-green-50 text-green-700',
+  'Short Code': 'bg-orange-50 text-orange-700',
+};
+
+let currentTab = 'brands';
+let registrations = JSON.parse(JSON.stringify(SAMPLE_REGISTRATIONS));
 
 // ============================================================
-// APPLICATION STATE
+//  DASHBOARD
 // ============================================================
-let app = {
+function showDashboard() {
+  document.getElementById('dashboard-view').style.display = 'block';
+  document.getElementById('flow-view').style.display = 'none';
+  updateStats();
+  renderTable();
+}
+
+function updateStats() {
+  const total = registrations.length;
+  const counts = { blocked:0, 'pending-brand':0, 'pending-campaign':0, approved:0, draft:0 };
+  registrations.forEach(r => { counts[r.statusKey] = (counts[r.statusKey]||0) + 1; });
+
+  const managed = registrations.filter(r => r.statusKey === 'approved').length;
+  document.getElementById('brand-count').textContent = managed;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-blocked').textContent = counts.blocked;
+  document.getElementById('stat-brand').textContent = counts['pending-brand'];
+  document.getElementById('stat-campaign').textContent = counts['pending-campaign'];
+  document.getElementById('stat-registered').textContent = counts.approved;
+
+  const pct = k => total ? ((counts[k]||0)/total*100).toFixed(1)+'%' : '0%';
+  document.getElementById('seg-blocked').style.width = pct('blocked');
+  document.getElementById('seg-brand').style.width = pct('pending-brand');
+  document.getElementById('seg-campaign').style.width = pct('pending-campaign');
+  document.getElementById('seg-registered').style.width = pct('approved');
+}
+
+function switchMainTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-brands').className = 'tab' + (tab==='brands' ? ' active' : '');
+  document.getElementById('tab-campaigns').className = 'tab' + (tab==='campaigns' ? ' active' : '');
+  renderTable();
+}
+
+function renderTable() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const statusFilter = document.getElementById('filter-status').value;
+  const channelFilter = document.getElementById('filter-channel').value;
+
+  let rows = registrations.filter(r => {
+    if (search && !r.name.toLowerCase().includes(search) && !r.dba.toLowerCase().includes(search)) return false;
+    if (statusFilter && r.statusKey !== statusFilter) return false;
+    if (channelFilter && r.channel !== channelFilter) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('table-body');
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    document.getElementById('empty-state').style.display = 'block';
+    return;
+  }
+  document.getElementById('empty-state').style.display = 'none';
+
+  tbody.innerHTML = rows.map(r => {
+    const s = STATUS_CONFIG[r.statusKey];
+    const ch = CHANNEL_BADGE[r.channel] || 'bg-gray-100 text-gray-600';
+    return `
+      <tr class="table-row" onclick="openRegistration('${r.id}')">
+        <td class="px-5 py-3.5">
+          <div class="font-medium text-gray-900">${r.name}</div>
+          <div class="text-xs text-gray-400">${r.dba} · ${r.id}</div>
+        </td>
+        <td class="px-5 py-3.5">
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${ch}">${r.channel}</span>
+        </td>
+        <td class="px-5 py-3.5">
+          <span class="status-badge ${s.cls}">
+            <span class="w-2 h-2 rounded-full inline-block ${s.dot}"></span>
+            ${s.label}
+          </span>
+        </td>
+        <td class="px-5 py-3.5 text-xs text-gray-500">${STATE_LABELS[r.state] || r.state}</td>
+        <td class="px-5 py-3.5 text-gray-500">${r.date}</td>
+        <td class="px-5 py-3.5 text-right">
+          <button class="text-blue-600 text-sm font-medium hover:underline" onclick="event.stopPropagation();openRegistration('${r.id}')">
+            ${r.statusKey === 'approved' ? 'View' : 'Continue →'}
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openRegistration(id) {
+  const reg = registrations.find(r => r.id === id);
+  if (!reg) return;
+  if (reg.statusKey === 'approved' || reg.statusKey === 'blocked') {
+    showRegistrationDetail(reg);
+  } else {
+    resumeRegistration(reg);
+  }
+}
+
+function showRegistrationDetail(reg) {
+  document.getElementById('dashboard-view').style.display = 'none';
+  document.getElementById('flow-view').style.display = 'block';
+  document.getElementById('flow-breadcrumb').textContent = reg.name;
+  document.getElementById('close-btn').style.display = 'none';
+
+  if (reg.channel) {
+    const b = document.getElementById('flow-channel-badge');
+    b.textContent = reg.channel;
+    b.style.display = 'inline-block';
+  }
+
+  flowState.currentState = reg.state;
+  flowState.registration = {
+    id: reg.id,
+    channelType: reg.channel,
+    brand: { brandId: reg.brand, legalName: reg.name, dba: reg.dba, ein: reg.ein, industry: reg.industry },
+    autoApproved: true,
+    cycleCount: reg.cycles,
+    brandCycleCount: reg.cycles,
+    cnpSuggestion: reg.channel === '10DLC' ? 'Twilio / Sinch' : reg.channel === 'TFN' ? 'Bandwidth / Vonage' : 'Syniverse',
+    cnpOverridden: false,
+  };
+
+  renderFlowSteps();
+  updateFlowProgress();
+  updateFlowArtifact();
+
+  if (reg.state === 'P2') renderP2();
+  else if (reg.state === 'S8') renderS8('USER_CLOSED');
+}
+
+// ============================================================
+//  FLOW STATE
+// ============================================================
+let flowState = {
   currentState: null,
   registration: {},
   webhooks: [],
-  eventLog: [],
-  activeTab: 'webhooks',
-  auditProcessing: false,
-  brandProcessing: false,
-  registryProcessing: false,
 };
+let einVerified = false;
 
-// ============================================================
-// INIT
-// ============================================================
-document.addEventListener('DOMContentLoaded', () => {
-  renderStateNav();
-  renderWelcome();
-});
+const FLOW_STEPS = [
+  { id:'S1', label:'Draft',           actor:'User'   },
+  { id:'S2', label:'Campaign Audit',  actor:'System' },
+  { id:'S3', label:'Audit Feedback',  actor:'User'   },
+  { id:'S4', label:'Brand Collection',actor:'User'   },
+  { id:'S5', label:'Brand Validation',actor:'System' },
+  { id:'S6', label:'Brand Feedback',  actor:'User'   },
+  { id:'S7', label:'Registry Submit', actor:'System' },
+];
+const FLOW_PROGRESS_PCT = { S1:10, S2:25, S3:38, S4:52, S5:68, S6:72, S7:85, P2:100, S8:0 };
+const PROGRESS_LABELS = { S1:'Draft', S2:'Audit running…', S3:'Reviewing feedback', S4:'Brand collection', S5:'Brand validation…', S6:'Brand feedback', S7:'Submitting…', P2:'Complete!', S8:'Closed' };
 
-function renderWelcome() {
-  document.getElementById('main-content').innerHTML = `
-    <div class="card p-8 text-center fade-in">
-      <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#6c63ff] to-[#00d4aa] flex items-center justify-center mx-auto mb-6 text-3xl">V</div>
-      <h1 class="text-2xl font-bold mb-2">Volt Registration Platform</h1>
-      <p class="text-[#8b8fa8] mb-1 text-sm">Phase 1 — Campaign Audit & Brand Validation</p>
-      <p class="text-[#8b8fa8] text-xs mb-8 max-w-md mx-auto">Submit your SMS campaign registration for 10DLC, Toll-Free, or Short Code. The system will audit your campaign content and validate your brand before submitting to the registry.</p>
-      <button class="btn btn-primary text-base px-8 py-3" onclick="startRegistration()">
-        + New Registration
-      </button>
-    </div>
-  `;
-}
+function startNewRegistration() {
+  flowState = { currentState: null, registration: {}, webhooks: [] };
+  einVerified = false;
 
-function startRegistration() {
-  app.registration = {
+  flowState.registration = {
     id: 'REG-' + Math.random().toString(36).slice(2,8).toUpperCase(),
-    createdAt: new Date().toISOString(),
-    channelType: null,
-    campaign: {},
-    brand: {},
-    auditFeedback: null,
-    brandFeedback: null,
-    cnpSuggestion: null,
-    cnpOverridden: false,
-    autoApproved: false,
-    feedbackDisposition: {},
-    brandFeedbackDisposition: {},
-    cycleCount: 0,
-    brandCycleCount: 0,
-    closureReason: null,
+    channelType: null, campaign: {}, brand: {},
+    autoApproved: false, auditFeedback: null, brandFeedback: null,
+    cnpSuggestion: null, cnpOverridden: false,
+    cycleCount: 0, brandCycleCount: 0, closureReason: null,
   };
+
+  document.getElementById('dashboard-view').style.display = 'none';
+  document.getElementById('flow-view').style.display = 'block';
+  document.getElementById('flow-breadcrumb').textContent = 'New Registration';
   document.getElementById('close-btn').style.display = 'block';
+  document.getElementById('flow-channel-badge').style.display = 'none';
+  document.getElementById('webhook-log').innerHTML = '';
+
   transitionTo('S1');
 }
 
-// ============================================================
-// STATE TRANSITIONS
-// ============================================================
+function resumeRegistration(reg) {
+  startNewRegistration();
+  document.getElementById('flow-breadcrumb').textContent = reg.name;
+}
+
 function transitionTo(stateId) {
-  const prev = app.currentState;
-  app.currentState = stateId;
+  flowState.currentState = stateId;
+  renderFlowSteps();
+  updateFlowProgress();
+  updateFlowArtifact();
 
-  logEvent(`Transition: ${prev ? prev : 'none'} → ${stateId}`, 'transition');
-  renderStateNav();
-  updateArtifactSummary();
-
-  const renders = {
-    S1: renderS1, S2: renderS2, S3: renderS3,
-    S4: renderS4, S5: renderS5, S6: renderS6,
-    S7: renderS7, S8: renderS8, P2: renderP2,
-  };
-  if (renders[stateId]) renders[stateId]();
-
-  const badge = document.getElementById('channel-badge');
-  if (app.registration.channelType) {
-    badge.textContent = app.registration.channelType;
-    badge.style.display = 'inline-flex';
+  const r = flowState.registration;
+  if (r.channelType) {
+    const b = document.getElementById('flow-channel-badge');
+    b.textContent = r.channelType;
+    b.style.display = 'inline-block';
   }
-  updateProgress();
+
+  const renders = { S1:renderS1, S2:renderS2, S3:renderS3, S4:renderS4, S5:renderS5, S6:renderS6, S7:renderS7, S8:()=>renderS8('USER_CLOSED'), P2:renderP2 };
+  if (renders[stateId]) renders[stateId]();
+}
+
+function renderFlowSteps() {
+  const cur = flowState.currentState;
+  const order = ['S1','S2','S3','S4','S5','S6','S7'];
+  const idx = order.indexOf(cur);
+
+  document.getElementById('flow-steps').innerHTML = FLOW_STEPS.map((s, i) => {
+    const done = i < idx || cur === 'P2';
+    const active = s.id === cur;
+    const dotClass = done ? 'step-dot-done' : active ? 'step-dot-active' : 'step-dot-idle';
+    const lineClass = done ? 'step-line-done' : '';
+    const label = done ? '✓' : i + 1;
+    return `
+      <div>
+        <div class="state-step">
+          <div class="step-dot ${dotClass}">${label}</div>
+          <div>
+            <div class="text-xs font-medium ${active ? 'text-gray-900' : done ? 'text-gray-500' : 'text-gray-400'}">${s.label}</div>
+            <div class="text-[10px] ${active ? 'text-blue-500' : 'text-gray-400'}">${s.actor}</div>
+          </div>
+        </div>
+        ${i < FLOW_STEPS.length-1 ? `<div class="step-line ${lineClass}"></div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function updateFlowProgress() {
+  const pct = flowState.currentState ? (FLOW_PROGRESS_PCT[flowState.currentState] || 0) : 0;
+  document.getElementById('flow-progress').style.width = pct + '%';
+  document.getElementById('flow-progress-label').textContent = PROGRESS_LABELS[flowState.currentState] || 'Not started';
+}
+
+function updateFlowArtifact() {
+  const r = flowState.registration;
+  if (!r.id) return;
+  const items = [
+    `<div><span class="text-gray-400">ID</span> <span class="font-mono">${r.id}</span></div>`,
+    r.channelType && `<div><span class="text-gray-400">Channel</span> ${r.channelType}</div>`,
+    r.autoApproved !== undefined && r.cycleCount > 0 && `<div><span class="text-gray-400">Auto-approved</span> ${r.autoApproved ? '<span class="text-green-600">Yes</span>' : '<span class="text-amber-600">No</span>'}`,
+    r.cycleCount && `<div><span class="text-gray-400">Audit cycles</span> ${r.cycleCount}</div>`,
+    r.brand?.brandId && `<div><span class="text-gray-400">Brand ID</span> <span class="font-mono text-[10px]">${r.brand.brandId}</span></div>`,
+    r.cnpSuggestion && `<div><span class="text-gray-400">CNP</span> ${r.cnpSuggestion}${r.cnpOverridden ? ' <span class="text-amber-500">⚠</span>' : ''}</div>`,
+  ].filter(Boolean);
+  document.getElementById('flow-artifact').innerHTML = items.join('');
+}
+
+function fireWebhook(event, payload) {
+  flowState.webhooks.unshift({ event, payload, ts: new Date().toLocaleTimeString() });
+  const colors = {
+    REGISTRATION_SUBMITTED:'text-blue-600', AUDIT_FEEDBACK_AVAILABLE:'text-purple-600',
+    BRAND_SUBMITTED:'text-blue-600', BRAND_VALIDATED:'text-green-600',
+    BRAND_FEEDBACK_PROVIDED:'text-amber-600', BRAND_RESUBMITTED:'text-amber-600',
+    REGISTRY_SUBMITTED:'text-green-600', REGISTRY_SUBMISSION_FAILED:'text-red-500',
+    REGISTRATION_CLOSED:'text-red-500', PROCEEDING_TO_BRAND:'text-green-600',
+    CAMPAIGN_RESUBMITTED:'text-amber-600', EIN_VALIDATION_ERROR:'text-red-500',
+    PROCEEDING_TO_REGISTRY:'text-green-600',
+  };
+  const col = colors[event] || 'text-gray-500';
+  const logEl = document.getElementById('webhook-log');
+  logEl.innerHTML = flowState.webhooks.slice(0,15).map(w => `
+    <div class="mb-3 font-mono text-xs border border-gray-200 rounded-lg p-2.5 bg-white">
+      <div class="font-bold ${colors[w.event]||'text-gray-600'} mb-1">${w.event}</div>
+      <div class="text-gray-400 mb-1">${w.ts}</div>
+      <div class="text-gray-400 break-all">${JSON.stringify(w.payload).slice(0,100)}</div>
+    </div>
+  `).join('');
 }
 
 // ============================================================
-// STATE RENDERERS
+//  STATE RENDERERS
 // ============================================================
+function fc(html) {
+  const el = document.getElementById('flow-content');
+  el.innerHTML = `<div class="fade-in">${html}</div>`;
+}
 
-// S1 — Draft
-function renderS1() {
-  const r = app.registration;
-  const channelOptions = CHANNEL_TYPES.map(c =>
-    `<option value="${c}" ${r.channelType === c ? 'selected' : ''}>${c}</option>`
-  ).join('');
-
-  document.getElementById('main-content').innerHTML = `
-    <div class="fade-in">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold" style="background:#1e1a40;color:#6c63ff">S1</div>
-        <div>
-          <div class="font-semibold">Draft</div>
-          <div class="text-xs text-[#8b8fa8]">Complete all required campaign fields before submitting</div>
-        </div>
-        <div class="ml-auto pill pill-user">User</div>
+function stateHeader(id, name, sub, actor, color='blue') {
+  const actorColors = { User:'bg-blue-50 text-blue-700', System:'bg-green-50 text-green-700', 'System + Reviewer':'bg-purple-50 text-purple-700' };
+  return `
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold bg-gray-100 text-gray-700 border border-gray-200">${id}</div>
+      <div>
+        <div class="font-semibold text-gray-900">${name}</div>
+        <div class="text-xs text-gray-500">${sub}</div>
       </div>
-
-      <div class="card p-5 mb-4">
-        <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-4">Channel Type <span class="text-red-400">*</span></div>
-        <select class="input" id="channelType" onchange="onChannelTypeChange()">
-          <option value="">Select channel type...</option>
-          ${channelOptions}
-        </select>
-        <p class="text-xs text-[#8b8fa8] mt-2">Must be set first — drives required field set for the rest of the form.</p>
-      </div>
-
-      <div class="card p-5 mb-4" id="campaign-fields" style="${r.channelType ? '' : 'display:none'}">
-        <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-4">Campaign Fields</div>
-        <div class="space-y-4">
-          <div>
-            <div class="label">Message Description <span class="text-red-400">*</span></div>
-            <textarea class="input" id="messageDesc" rows="2" placeholder="Describe the messages you'll send...">${r.campaign.messageDesc||''}</textarea>
-          </div>
-          <div>
-            <div class="label">Example Message Copy <span class="text-red-400">*</span></div>
-            <textarea class="input" id="exampleMsg" rows="2" placeholder="Hi [Name], here is your order update...">${r.campaign.exampleMsg||''}</textarea>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <div class="label">Home Page URL <span class="text-red-400">*</span></div>
-              <input class="input" id="homepageUrl" value="${r.campaign.homepageUrl||''}" placeholder="https://example.com" />
-            </div>
-            <div>
-              <div class="label">Privacy Policy URL <span class="text-red-400">*</span></div>
-              <input class="input" id="privacyUrl" value="${r.campaign.privacyUrl||''}" placeholder="https://example.com/privacy" />
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <div class="label">Opt-in URL <span class="text-red-400">*</span></div>
-              <input class="input" id="optinUrl" value="${r.campaign.optinUrl||''}" placeholder="https://example.com/subscribe" />
-            </div>
-            <div>
-              <div class="label">Terms & Conditions URL <span class="text-red-400">*</span></div>
-              <input class="input" id="termsUrl" value="${r.campaign.termsUrl||''}" placeholder="https://example.com/terms" />
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <div class="label">Industry <span class="text-red-400">*</span></div>
-              <select class="input" id="industry">
-                ${['','E-commerce','Healthcare','Finance','Retail','Technology','Real Estate','Education','Non-profit','Other'].map(i =>
-                  `<option value="${i}" ${(r.campaign.industry||'')===i?'selected':''}>${i||'Select industry...'}</option>`
-                ).join('')}
-              </select>
-            </div>
-            <div>
-              <div class="label">Opt-in Screenshot URL <span class="text-red-400">*</span></div>
-              <input class="input" id="optinScreenshot" value="${r.campaign.optinScreenshot||''}" placeholder="https://s3.../screenshot.png" />
-            </div>
-          </div>
-          ${r.channelType !== '10DLC' ? `
-          <div class="grid grid-cols-2 gap-3" id="tfn-fields">
-            <div>
-              <div class="label">Message Frequency <span class="text-red-400">*</span></div>
-              <input class="input" id="msgFrequency" value="${r.campaign.msgFrequency||''}" placeholder="e.g. 4x/month" />
-            </div>
-            <div>
-              <div class="label">Est. Monthly Volume <span class="text-red-400">*</span></div>
-              <input class="input" id="estVolume" value="${r.campaign.estVolume||''}" placeholder="e.g. 50000" type="number" />
-            </div>
-          </div>` : ''}
-          ${r.channelType === 'Short Code' ? `
-          <div>
-            <div class="label">Contact Support Page URL <span class="text-red-400">*</span></div>
-            <input class="input" id="supportUrl" value="${r.campaign.supportUrl||''}" placeholder="https://example.com/support" />
-          </div>` : ''}
-        </div>
-
-        <div class="mt-5 pt-4 border-t border-[#2a2d3a]">
-          <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-3">Optional Fields</div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="flex items-center gap-2">
-              <input type="checkbox" id="directLender" ${r.campaign.directLender?'checked':''} class="accent-[#6c63ff]" />
-              <label class="text-sm text-[#8b8fa8]" for="directLender">Direct Lender</label>
-            </div>
-            <div class="flex items-center gap-2">
-              <input type="checkbox" id="ageGate" ${r.campaign.ageGate?'checked':''} class="accent-[#6c63ff]" />
-              <label class="text-sm text-[#8b8fa8]" for="ageGate">Age Gate Required</label>
-            </div>
-            <div class="flex items-center gap-2">
-              <input type="checkbox" id="embeddedPhone" ${r.campaign.embeddedPhone?'checked':''} class="accent-[#6c63ff]" />
-              <label class="text-sm text-[#8b8fa8]" for="embeddedPhone">Embedded Phone Number</label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="s1-errors" class="mb-4"></div>
-
-      <div class="flex gap-3" id="s1-actions" style="${r.channelType ? '' : 'display:none'}">
-        <button class="btn btn-primary flex-1" onclick="submitDraft()">Submit Registration →</button>
-      </div>
+      <span class="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full ${actorColors[actor]||'bg-gray-100 text-gray-600'}">${actor}</span>
     </div>
   `;
 }
 
-function onChannelTypeChange() {
-  const val = document.getElementById('channelType').value;
-  app.registration.channelType = val;
-  const badge = document.getElementById('channel-badge');
-  if (val) {
-    badge.textContent = val;
-    badge.style.display = 'inline-flex';
-  }
+// S1
+function renderS1() {
+  const r = flowState.registration;
+  const opts = ['10DLC','TFN (Toll-Free)','Short Code'].map(c =>
+    `<option value="${c}" ${r.channelType===c?'selected':''}>${c}</option>`
+  ).join('');
+
+  fc(`
+    ${stateHeader('S1','Draft','Complete all required campaign fields before submitting','User')}
+    <div class="card p-5 mb-4">
+      <div class="label mb-1">Channel Type <span class="text-red-500">*</span></div>
+      <select class="input" id="channelType" onchange="onChannelChange()">
+        <option value="">Select channel type…</option>${opts}
+      </select>
+      <p class="text-xs text-gray-400 mt-1.5">Must be set first — drives required fields for the rest of the form.</p>
+    </div>
+    <div id="s1-fields" style="${r.channelType?'':'display:none'}">
+      <div class="card p-5 mb-4">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Campaign Fields</div>
+        <div class="space-y-4">
+          <div>
+            <div class="label">Message Description <span class="text-red-500">*</span></div>
+            <textarea class="input" id="messageDesc" rows="2" placeholder="Describe what messages you'll send…">${r.campaign?.messageDesc||''}</textarea>
+          </div>
+          <div>
+            <div class="label">Example Message Copy <span class="text-red-500">*</span></div>
+            <textarea class="input" id="exampleMsg" rows="2" placeholder="Hi [Name], your order shipped. Reply STOP to opt out.">${r.campaign?.exampleMsg||''}</textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><div class="label">Home Page URL <span class="text-red-500">*</span></div><input class="input" id="homepageUrl" value="${r.campaign?.homepageUrl||''}" placeholder="https://example.com"/></div>
+            <div><div class="label">Privacy Policy URL <span class="text-red-500">*</span></div><input class="input" id="privacyUrl" value="${r.campaign?.privacyUrl||''}" placeholder="https://example.com/privacy"/></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><div class="label">Opt-in URL <span class="text-red-500">*</span></div><input class="input" id="optinUrl" value="${r.campaign?.optinUrl||''}" placeholder="https://example.com/subscribe"/></div>
+            <div><div class="label">Terms & Conditions URL <span class="text-red-500">*</span></div><input class="input" id="termsUrl" value="${r.campaign?.termsUrl||''}" placeholder="https://example.com/terms"/></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="label">Industry <span class="text-red-500">*</span></div>
+              <select class="input" id="industry">
+                ${['','E-commerce','Healthcare','Finance','Retail','Technology','Real Estate','Education','Non-profit','Other'].map(i=>`<option value="${i}" ${(r.campaign?.industry||'')===i?'selected':''}>${i||'Select…'}</option>`).join('')}
+              </select>
+            </div>
+            <div><div class="label">Opt-in Screenshot URL <span class="text-red-500">*</span></div><input class="input" id="optinScreenshot" value="${r.campaign?.optinScreenshot||''}" placeholder="https://…/screenshot.png"/></div>
+          </div>
+          ${r.channelType !== '10DLC' ? `
+          <div class="grid grid-cols-2 gap-3">
+            <div><div class="label">Message Frequency <span class="text-red-500">*</span></div><input class="input" id="msgFrequency" value="${r.campaign?.msgFrequency||''}" placeholder="e.g. 4x/month"/></div>
+            <div><div class="label">Est. Monthly Volume <span class="text-red-500">*</span></div><input class="input" id="estVolume" type="number" value="${r.campaign?.estVolume||''}" placeholder="e.g. 50000"/></div>
+          </div>` : ''}
+          ${r.channelType === 'Short Code' ? `<div><div class="label">Contact Support URL <span class="text-red-500">*</span></div><input class="input" id="supportUrl" value="${r.campaign?.supportUrl||''}" placeholder="https://example.com/support"/></div>` : ''}
+        </div>
+        <div class="mt-5 pt-4 border-t border-gray-100">
+          <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Optional Fields</div>
+          <div class="flex gap-5">
+            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer"><input type="checkbox" id="directLender" ${r.campaign?.directLender?'checked':''} class="accent-blue-600"/>Direct Lender</label>
+            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer"><input type="checkbox" id="ageGate" ${r.campaign?.ageGate?'checked':''} class="accent-blue-600"/>Age Gate Required</label>
+            <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer"><input type="checkbox" id="embeddedPhone" ${r.campaign?.embeddedPhone?'checked':''} class="accent-blue-600"/>Embedded Phone</label>
+          </div>
+        </div>
+      </div>
+      <div id="s1-errors" class="mb-3"></div>
+      <button class="btn-primary w-full justify-center py-2.5" onclick="submitDraft()">Submit Registration →</button>
+    </div>
+  `);
+}
+
+function onChannelChange() {
+  flowState.registration.channelType = document.getElementById('channelType').value;
+  const b = document.getElementById('flow-channel-badge');
+  b.textContent = flowState.registration.channelType;
+  b.style.display = flowState.registration.channelType ? 'inline-block' : 'none';
   renderS1();
 }
 
 function submitDraft() {
-  const r = app.registration;
+  const r = flowState.registration;
+  const get = id => document.getElementById(id)?.value?.trim()||'';
   const errors = [];
-  const get = id => document.getElementById(id)?.value?.trim() || '';
-
-  const required = ['messageDesc','exampleMsg','homepageUrl','privacyUrl','optinUrl','termsUrl','optinScreenshot'];
-  const labels = { messageDesc:'Message Description', exampleMsg:'Example Message', homepageUrl:'Home Page URL', privacyUrl:'Privacy Policy URL', optinUrl:'Opt-in URL', termsUrl:'T&C URL', optinScreenshot:'Opt-in Screenshot URL' };
-  required.forEach(f => { if (!get(f)) errors.push(labels[f] + ' is required'); });
-  if (!document.getElementById('industry')?.value) errors.push('Industry is required');
+  ['messageDesc','exampleMsg','homepageUrl','privacyUrl','optinUrl','termsUrl','optinScreenshot'].forEach(f => {
+    if (!get(f)) errors.push({ id:f, msg: f.replace(/([A-Z])/g,' $1').trim() + ' is required' });
+  });
+  if (!document.getElementById('industry')?.value) errors.push({ id:'industry', msg:'Industry is required' });
   if (r.channelType !== '10DLC') {
-    if (!get('msgFrequency')) errors.push('Message Frequency is required');
-    if (!get('estVolume')) errors.push('Estimated Monthly Volume is required');
+    if (!get('msgFrequency')) errors.push({ id:'msgFrequency', msg:'Message Frequency is required' });
+    if (!get('estVolume')) errors.push({ id:'estVolume', msg:'Estimated Volume is required' });
   }
-  if (r.channelType === 'Short Code') {
-    if (!get('supportUrl')) errors.push('Contact Support Page URL is required');
-  }
+  if (r.channelType === 'Short Code' && !get('supportUrl')) errors.push({ id:'supportUrl', msg:'Support URL is required' });
 
   if (errors.length) {
-    document.getElementById('s1-errors').innerHTML = errors.map(e =>
-      `<div class="feedback-item feedback-error mb-1">${e}</div>`
-    ).join('');
+    document.getElementById('s1-errors').innerHTML = errors.map(e=>`<div class="inline-err">• ${e.msg}</div>`).join('');
     return;
   }
-
-  // Save campaign fields
-  r.campaign = {
-    messageDesc: get('messageDesc'),
-    exampleMsg: get('exampleMsg'),
-    homepageUrl: get('homepageUrl'),
-    privacyUrl: get('privacyUrl'),
-    optinUrl: get('optinUrl'),
-    termsUrl: get('termsUrl'),
-    optinScreenshot: get('optinScreenshot'),
-    industry: document.getElementById('industry').value,
-    msgFrequency: get('msgFrequency'),
-    estVolume: get('estVolume'),
-    supportUrl: get('supportUrl'),
-    directLender: document.getElementById('directLender')?.checked || false,
-    ageGate: document.getElementById('ageGate')?.checked || false,
-    embeddedPhone: document.getElementById('embeddedPhone')?.checked || false,
-  };
-
-  // Determine auto-approval (simulate: 70% chance for demo)
+  r.campaign = { messageDesc:get('messageDesc'), exampleMsg:get('exampleMsg'), homepageUrl:get('homepageUrl'), privacyUrl:get('privacyUrl'), optinUrl:get('optinUrl'), termsUrl:get('termsUrl'), optinScreenshot:get('optinScreenshot'), industry:document.getElementById('industry').value, msgFrequency:get('msgFrequency'), estVolume:get('estVolume'), supportUrl:get('supportUrl'), directLender:document.getElementById('directLender')?.checked||false, ageGate:document.getElementById('ageGate')?.checked||false };
   r.autoApproved = Math.random() > 0.3;
-  r.cycleCount = (r.cycleCount || 0) + 1;
-
-  fireWebhook('REGISTRATION_SUBMITTED', { registration_id: r.id, channel_type: r.channelType, org_id: 'ORG-DEMO' });
+  r.cycleCount = (r.cycleCount||0) + 1;
+  fireWebhook('REGISTRATION_SUBMITTED', { registration_id:r.id, channel_type:r.channelType, org_id:'ORG-DEMO' });
   transitionTo('S2');
 }
 
-// S2 — Campaign Audit In Progress
+// S2
 function renderS2() {
-  const r = app.registration;
-  document.getElementById('main-content').innerHTML = `
-    <div class="fade-in">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold" style="background:#1a2035;color:#3b82f6">S2</div>
-        <div>
-          <div class="font-semibold">Campaign Audit In Progress</div>
-          <div class="text-xs text-[#8b8fa8]">Automated review running${r.autoApproved ? '' : ' → Human review queued'}</div>
-        </div>
-        <div class="ml-auto pill pill-system">System</div>
-      </div>
-
-      <div class="card p-6 text-center">
-        <div class="spin w-10 h-10 rounded-full border-4 border-[#2a2d3a] border-t-[#6c63ff] mx-auto mb-5"></div>
-        <div class="font-semibold mb-2">Audit Running</div>
-        <div class="text-sm text-[#8b8fa8] mb-4" id="audit-substate">
-          ${r.autoApproved ? 'Automated Review...' : 'Automated Review → Human Review Queue...'}
-        </div>
-        <div class="text-xs text-[#8b8fa8] max-w-xs mx-auto">The audit always produces output regardless of content quality. No pass/fail gate — feedback is advisory.</div>
-      </div>
+  const r = flowState.registration;
+  fc(`
+    ${stateHeader('S2','Campaign Audit In Progress', r.autoApproved?'Automated review running':'Automated review → Human review queue','System')}
+    <div class="card p-8 text-center border-blue-100">
+      <div class="spin w-10 h-10 rounded-full border-4 border-gray-200 border-t-blue-500 mx-auto mb-5"></div>
+      <div class="font-semibold text-gray-900 mb-1">Audit Running</div>
+      <div class="text-sm text-gray-500" id="s2-sub">${r.autoApproved?'Automated Review…':'Automated Review → Human Review Queue…'}</div>
+      <p class="text-xs text-gray-400 mt-3 max-w-xs mx-auto">The audit always produces output regardless of content quality. No pass/fail gate — feedback is advisory.</p>
     </div>
-  `;
-
-  // Simulate audit delay
+  `);
+  if (!r.autoApproved) setTimeout(() => { const el=document.getElementById('s2-sub'); if(el) el.textContent='Human Review in progress…'; }, 1200);
   setTimeout(() => {
-    if (!r.autoApproved) {
-      document.getElementById('audit-substate').textContent = 'Human Review in progress...';
-    }
-  }, 1000);
-
-  setTimeout(() => {
-    r.auditFeedback = generateAuditFeedback(r);
-    r.cnpSuggestion = generateCnpSuggestion(r);
-    fireWebhook('AUDIT_FEEDBACK_AVAILABLE', {
-      registration_id: r.id,
-      auto_approved: r.autoApproved,
-      cnp_suggestion: r.cnpSuggestion,
-      feedback_item_count: r.auditFeedback.length
-    });
+    r.auditFeedback = genAuditFeedback(r);
+    r.cnpSuggestion = {'10DLC':'Twilio / Sinch','TFN (Toll-Free)':'Bandwidth / Vonage','Short Code':'Syniverse / Zipwhip'}[r.channelType]||'Twilio';
+    fireWebhook('AUDIT_FEEDBACK_AVAILABLE', { registration_id:r.id, auto_approved:r.autoApproved, cnp_suggestion:r.cnpSuggestion, feedback_item_count:r.auditFeedback.length });
     transitionTo('S3');
   }, r.autoApproved ? 2000 : 3500);
 }
 
-function generateAuditFeedback(r) {
+function genAuditFeedback(r) {
   const items = [];
-  if (!r.campaign.directLender && !r.campaign.ageGate) {
-    items.push({ id:'AF1', severity:'info', description:'Optional fields not completed', recommendation:'Consider completing Direct Lender, Age Gate, and Keyword Responder fields for better carrier approval rates.' });
-  }
-  if (r.campaign.directLender) {
-    items.push({ id:'AF2', severity:'warn', description:'TCPA compliance check triggered', recommendation:'Direct Lender flag detected. Ensure sample messages include required TCPA compliance language (stop instructions, message frequency disclosure).' });
-  }
-  if (r.campaign.ageGate) {
-    items.push({ id:'AF3', severity:'warn', description:'Age gate language required', recommendation:'Age Gate Required flag detected. Verify opt-in flow and sample messages include age verification language.' });
-  }
-  if (r.campaign.exampleMsg && r.campaign.exampleMsg.length < 30) {
-    items.push({ id:'AF4', severity:'error', description:'Example message too brief', recommendation:'Provide a more complete example message demonstrating actual content, opt-out instructions, and message frequency.' });
-  }
-  if (!r.campaign.exampleMsg?.toLowerCase().includes('stop')) {
-    items.push({ id:'AF5', severity:'warn', description:'Opt-out instruction missing from example', recommendation:'Industry best practice: include STOP opt-out instruction in example message copy.' });
-  }
-  items.push({ id:'AF6', severity:'info', description:'Keyword responder copy not provided', recommendation:'Adding HELP, STOP, and START keyword responses improves carrier approval rates.' });
+  if (!r.campaign.directLender && !r.campaign.ageGate) items.push({ severity:'info', desc:'Optional fields not completed', rec:'Completing Direct Lender, Age Gate, and Keyword Responder fields improves carrier approval rates.' });
+  if (r.campaign.directLender) items.push({ severity:'warn', desc:'TCPA compliance check triggered', rec:'Direct Lender flag set. Ensure sample messages include mandatory TCPA compliance language and stop instructions.' });
+  if (r.campaign.ageGate) items.push({ severity:'warn', desc:'Age gate language required', rec:'Verify opt-in flow and sample messages include age verification language.' });
+  if ((r.campaign.exampleMsg||'').length < 30) items.push({ severity:'error', desc:'Example message too brief', rec:'Provide a fuller example showing content, opt-out instructions, and message frequency.' });
+  if (!(r.campaign.exampleMsg||'').toLowerCase().includes('stop')) items.push({ severity:'warn', desc:'STOP opt-out instruction missing', rec:'Industry best practice: include STOP opt-out in example message copy.' });
+  items.push({ severity:'info', desc:'Keyword responder copy not provided', rec:'Adding HELP, STOP, START keyword responses improves carrier approval rates.' });
   return items;
 }
 
-function generateCnpSuggestion(r) {
-  const suggestions = {
-    '10DLC': 'Twilio / Sinch',
-    'TFN (Toll-Free)': 'Bandwidth / Vonage',
-    'Short Code': 'Syniverse / Zipwhip',
-  };
-  return suggestions[r.channelType] || 'Twilio';
-}
-
-// S3 — Audit Feedback Presented
+// S3
 function renderS3() {
-  const r = app.registration;
-  const feedback = r.auditFeedback || [];
-
-  const severityClass = { error: 'feedback-error', warn: 'feedback-warn', info: 'feedback-info' };
-
-  document.getElementById('main-content').innerHTML = `
-    <div class="fade-in">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold" style="background:#1e1a40;color:#6c63ff">S3</div>
-        <div>
-          <div class="font-semibold">Audit Feedback Presented</div>
-          <div class="text-xs text-[#8b8fa8]">Review feedback — you can proceed as-is, address items, or close</div>
-        </div>
-        <div class="ml-auto pill pill-user">User</div>
+  const r = flowState.registration;
+  const cls = { error:'feedback-error', warn:'feedback-warn', info:'feedback-info' };
+  fc(`
+    ${stateHeader('S3','Audit Feedback Presented','Review findings — proceed as-is, address items, or close','User')}
+    <div class="card p-5 mb-4">
+      <div class="flex items-center justify-between mb-4">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Audit Findings (${r.auditFeedback.length})</div>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${r.autoApproved?'bg-green-50 text-green-700':'bg-purple-50 text-purple-700'}">${r.autoApproved?'Auto-approved org':'Human reviewed'}</span>
       </div>
-
-      <div class="card p-5 mb-4">
-        <div class="flex items-start justify-between mb-4">
-          <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider">Audit Findings (${feedback.length})</div>
-          <div class="flex items-center gap-2 text-xs">
-            <span class="pill pill-system">${r.autoApproved ? 'Auto-approved org' : 'Human reviewed'}</span>
-          </div>
-        </div>
-        ${feedback.map(f => `
-          <div class="feedback-item ${severityClass[f.severity]}">
-            <div class="font-semibold text-xs mb-1">${f.description}</div>
-            <div class="text-xs opacity-80">${f.recommendation}</div>
-          </div>
-        `).join('')}
-      </div>
-
-      <div class="card p-5 mb-4">
-        <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-3">CNP / DCA Suggestion</div>
-        <div class="flex items-center justify-between">
-          <div>
-            <div class="text-sm font-medium">${r.cnpSuggestion}</div>
-            <div class="text-xs text-[#8b8fa8] mt-0.5">Based on channel type, industry, and estimated volume</div>
-          </div>
-          <div id="cnp-override-area">
-            <button class="btn btn-secondary text-xs px-3 py-1.5" onclick="showCnpOverride()">Override</button>
-          </div>
-        </div>
-        <div id="cnp-override-form" style="display:none" class="mt-3 pt-3 border-t border-[#2a2d3a]">
-          <input class="input text-sm" id="cnp-custom" placeholder="Enter preferred CNP/DCA..." />
-          <button class="btn btn-primary text-xs mt-2 px-3 py-1.5" onclick="applyCnpOverride()">Apply Override</button>
-        </div>
-        <div id="cnp-override-note" style="display:none" class="mt-2 text-xs text-[#f5a623]">⚠ CNP override recorded on artifact</div>
-      </div>
-
-      <div class="flex gap-3">
-        <button class="btn btn-secondary flex-1" onclick="resubmitCampaign()">
-          ↩ Address Feedback & Resubmit
-        </button>
-        <button class="btn btn-primary flex-1" onclick="proceedToBrand()">
-          Proceed to Brand Collection →
-        </button>
-      </div>
-      <p class="text-xs text-center text-[#8b8fa8] mt-2">You may proceed without addressing any feedback. All choices are recorded on the artifact.</p>
+      ${r.auditFeedback.map(f=>`<div class="${cls[f.severity]}"><div class="font-semibold mb-0.5">${f.desc}</div><div class="text-gray-600">${f.rec}</div></div>`).join('')}
     </div>
-  `;
+    <div class="card p-5 mb-5">
+      <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">CNP / DCA Suggestion</div>
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="font-medium text-gray-900" id="cnp-label">${r.cnpSuggestion}</div>
+          <div class="text-xs text-gray-400 mt-0.5">Based on channel type, industry & estimated volume</div>
+        </div>
+        <div id="cnp-override-area"><button class="btn-secondary text-xs px-3 py-1.5" onclick="showCnpOverride()">Override</button></div>
+      </div>
+      <div id="cnp-override-form" style="display:none" class="mt-3 pt-3 border-t border-gray-100">
+        <input class="input text-sm" id="cnp-custom" placeholder="Enter preferred CNP/DCA…"/>
+        <button class="btn-primary text-xs mt-2 px-3 py-1.5" onclick="applyCnpOverride()">Apply Override</button>
+      </div>
+      <div id="cnp-override-note" style="display:none" class="mt-2 text-xs text-amber-600">⚠ CNP override recorded on artifact</div>
+    </div>
+    <div class="flex gap-3">
+      <button class="btn-secondary flex-1" onclick="resubmitCampaign()">↩ Address Feedback & Resubmit</button>
+      <button class="btn-primary flex-1 justify-center" onclick="proceedToBrand()">Proceed to Brand Collection →</button>
+    </div>
+    <p class="text-xs text-center text-gray-400 mt-2">You may proceed without addressing any feedback. All choices are recorded.</p>
+  `);
 }
 
-function showCnpOverride() {
-  document.getElementById('cnp-override-form').style.display = 'block';
-}
-
+function showCnpOverride() { document.getElementById('cnp-override-form').style.display='block'; }
 function applyCnpOverride() {
-  const val = document.getElementById('cnp-custom').value.trim();
-  if (val) {
-    app.registration.cnpSuggestion = val;
-    app.registration.cnpOverridden = true;
-    document.getElementById('cnp-override-note').style.display = 'block';
-    document.getElementById('cnp-override-form').style.display = 'none';
-    document.getElementById('cnp-override-area').innerHTML = `<span class="text-sm font-medium text-[#f5a623]">${val} <span class="text-xs">(overridden)</span></span>`;
-  }
+  const v = document.getElementById('cnp-custom').value.trim();
+  if (v) { flowState.registration.cnpSuggestion=v; flowState.registration.cnpOverridden=true; document.getElementById('cnp-override-note').style.display='block'; document.getElementById('cnp-override-form').style.display='none'; document.getElementById('cnp-override-area').innerHTML=`<span class="text-sm font-medium text-amber-600">${v} <span class="text-xs">(overridden)</span></span>`; }
 }
-
 function resubmitCampaign() {
-  app.registration.cycleCount++;
-  recordFeedbackDisposition('campaign', 'resubmitted');
-  fireWebhook('CAMPAIGN_RESUBMITTED', { registration_id: app.registration.id, cycle_count: app.registration.cycleCount });
+  flowState.registration.cycleCount++;
+  fireWebhook('CAMPAIGN_RESUBMITTED', { registration_id:flowState.registration.id, cycle_count:flowState.registration.cycleCount });
   transitionTo('S1');
 }
-
 function proceedToBrand() {
-  const r = app.registration;
-  recordFeedbackDisposition('campaign', 'proceeded');
-  fireWebhook('PROCEEDING_TO_BRAND', {
-    registration_id: r.id,
-    cnp_selected: r.cnpSuggestion,
-    cnp_overridden: r.cnpOverridden,
-    feedback_waived_count: r.auditFeedback?.length || 0
-  });
+  const r = flowState.registration;
+  fireWebhook('PROCEEDING_TO_BRAND', { registration_id:r.id, cnp_selected:r.cnpSuggestion, cnp_overridden:r.cnpOverridden, feedback_waived_count:r.auditFeedback?.length||0 });
   transitionTo('S4');
 }
 
-// S4 — Brand Collection
+// S4
 function renderS4() {
-  const r = app.registration;
-  const b = r.brand || {};
-
-  document.getElementById('main-content').innerHTML = `
-    <div class="fade-in">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold" style="background:#1e1a40;color:#6c63ff">S4</div>
+  const r = flowState.registration; const b = r.brand||{};
+  fc(`
+    ${stateHeader('S4','Brand Collection','Enter your company / brand details. EIN is verified live.','User')}
+    <div class="card p-5 mb-4">
+      <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Brand Details</div>
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div><div class="label">Legal Entity Name <span class="text-red-500">*</span></div><input class="input" id="legalName" value="${b.legalName||''}" placeholder="Acme Corp LLC"/></div>
+          <div><div class="label">DBA (must match website) <span class="text-red-500">*</span></div><input class="input" id="dba" value="${b.dba||''}" placeholder="Acme"/></div>
+        </div>
         <div>
-          <div class="font-semibold">Brand Collection</div>
-          <div class="text-xs text-[#8b8fa8]">Enter your company / brand details. EIN is verified live.</div>
+          <div class="label">EIN <span class="text-red-500">*</span></div>
+          <div class="flex gap-2">
+            <input class="input" id="ein" value="${b.ein||''}" placeholder="XX-XXXXXXX" maxlength="10"/>
+            <button class="btn-secondary px-4 text-sm" onclick="verifyEIN()">Verify</button>
+          </div>
+          <div id="ein-status" class="text-xs mt-1 text-gray-400">${b.einVerified?'<span class=\'text-green-600\'>✓ EIN verified</span>':'Enter EIN and click Verify'}</div>
         </div>
-        <div class="ml-auto pill pill-user">User</div>
-      </div>
-
-      <div class="card p-5 mb-4">
-        <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-4">Brand Details</div>
-        <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <div class="label">Legal Entity Name <span class="text-red-400">*</span></div>
-              <input class="input" id="legalName" value="${b.legalName||''}" placeholder="Acme Corp LLC" />
-            </div>
-            <div>
-              <div class="label">DBA (must match website) <span class="text-red-400">*</span></div>
-              <input class="input" id="dba" value="${b.dba||''}" placeholder="Acme" />
-            </div>
-          </div>
-          <div>
-            <div class="label">EIN (Employer Identification Number) <span class="text-red-400">*</span></div>
-            <div class="flex gap-2">
-              <input class="input" id="ein" value="${b.ein||''}" placeholder="XX-XXXXXXX" maxlength="10" />
-              <button class="btn btn-secondary text-xs px-3" onclick="verifyEIN()">Verify</button>
-            </div>
-            <div id="ein-status" class="text-xs mt-1 text-[#8b8fa8]">Enter EIN and click Verify</div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <div class="label">Business Country <span class="text-red-400">*</span></div>
-              <select class="input" id="country">
-                ${['US','CA','GB','Other'].map(c => `<option value="${c}" ${(b.country||'US')===c?'selected':''}>${c==='US'?'United States':c==='CA'?'Canada':c==='GB'?'United Kingdom':c}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <div class="label">Business Type <span class="text-red-400">*</span></div>
-              <select class="input" id="bizType">
-                ${['','LLC','Corporation','Partnership','Sole Proprietor','Non-profit'].map(t => `<option value="${t}" ${(b.bizType||'')===t?'selected':''}>${t||'Select...'}</option>`).join('')}
-              </select>
-            </div>
-          </div>
-          <div>
-            <div class="label">Business Address <span class="text-red-400">*</span></div>
-            <input class="input" id="bizAddress" value="${b.bizAddress||''}" placeholder="123 Main St, City, State, ZIP" />
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <div class="label">Support Email <span class="text-red-400">*</span></div>
-              <input class="input" id="supportEmail" value="${b.supportEmail||''}" placeholder="support@example.com" type="email" />
-            </div>
-            <div>
-              <div class="label">Support Phone <span class="text-red-400">*</span></div>
-              <input class="input" id="supportPhone" value="${b.supportPhone||''}" placeholder="+1 (555) 000-0000" />
-            </div>
-          </div>
-          <div>
-            <div class="label">Industry <span class="text-red-400">*</span></div>
-            <select class="input" id="brandIndustry">
-              ${['','E-commerce','Healthcare','Finance','Retail','Technology','Real Estate','Education','Non-profit','Other'].map(i =>
-                `<option value="${i}" ${(b.industry||'')===i?'selected':''}>${i||'Select industry...'}</option>`
-              ).join('')}
-            </select>
-          </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><div class="label">Business Country <span class="text-red-500">*</span></div><select class="input" id="country">${['US','CA','GB','Other'].map(c=>`<option value="${c}" ${(b.country||'US')===c?'selected':''}>${c==='US'?'United States':c==='CA'?'Canada':c==='GB'?'United Kingdom':c}</option>`).join('')}</select></div>
+          <div><div class="label">Business Type <span class="text-red-500">*</span></div><select class="input" id="bizType">${['','LLC','Corporation','Partnership','Sole Proprietor','Non-profit'].map(t=>`<option value="${t}" ${(b.bizType||'')===t?'selected':''}>${t||'Select…'}</option>`).join('')}</select></div>
         </div>
+        <div><div class="label">Business Address <span class="text-red-500">*</span></div><input class="input" id="bizAddress" value="${b.bizAddress||''}" placeholder="123 Main St, City, State, ZIP"/></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><div class="label">Support Email <span class="text-red-500">*</span></div><input class="input" id="supportEmail" value="${b.supportEmail||''}" placeholder="support@example.com" type="email"/></div>
+          <div><div class="label">Support Phone <span class="text-red-500">*</span></div><input class="input" id="supportPhone" value="${b.supportPhone||''}" placeholder="+1 (555) 000-0000"/></div>
+        </div>
+        <div><div class="label">Industry <span class="text-red-500">*</span></div><select class="input" id="brandIndustry">${['','E-commerce','Healthcare','Finance','Retail','Technology','Real Estate','Education','Non-profit','Other'].map(i=>`<option value="${i}" ${(b.industry||'')===i?'selected':''}>${i||'Select…'}</option>`).join('')}</select></div>
       </div>
-
-      <div id="s4-errors" class="mb-4"></div>
-      <button class="btn btn-primary w-full" onclick="submitBrand()">Submit Brand →</button>
     </div>
-  `;
-
-  if (b.einVerified) {
-    document.getElementById('ein-status').textContent = '✓ EIN verified';
-    document.getElementById('ein-status').className = 'text-xs mt-1 text-[#00d4aa]';
-  }
+    <div id="s4-errors" class="mb-3"></div>
+    <button class="btn-primary w-full justify-center py-2.5" onclick="submitBrand()">Submit Brand →</button>
+  `);
 }
-
-let einVerified = false;
 
 function verifyEIN() {
   const ein = document.getElementById('ein').value.trim();
-  const status = document.getElementById('ein-status');
-
-  if (!ein || ein.length < 9) {
-    status.textContent = '✗ Enter a valid EIN (XX-XXXXXXX)';
-    status.className = 'text-xs mt-1 text-red-400';
-    einVerified = false;
-    return;
-  }
-
-  status.textContent = 'Verifying with IRS...';
-  status.className = 'text-xs mt-1 text-[#8b8fa8]';
-
+  const el = document.getElementById('ein-status');
+  if (!ein || ein.length < 9) { el.innerHTML='<span class="text-red-500">✗ Enter a valid EIN (XX-XXXXXXX)</span>'; einVerified=false; return; }
+  el.innerHTML='<span class="text-gray-400">Verifying with IRS…</span>';
   setTimeout(() => {
-    // Simulate: EINs starting with '00' fail
-    if (ein.startsWith('00')) {
-      status.textContent = '✗ EIN not found — check number and retry';
-      status.className = 'text-xs mt-1 text-red-400';
-      einVerified = false;
-      fireWebhook('EIN_VALIDATION_ERROR', { registration_id: app.registration.id, ein_prefix: ein.slice(0,2) });
-    } else {
-      status.textContent = '✓ EIN verified — match found';
-      status.className = 'text-xs mt-1 text-[#00d4aa]';
-      einVerified = true;
-      app.registration.brand.einVerified = true;
-    }
+    if (ein.startsWith('00')) { el.innerHTML='<span class="text-red-500">✗ EIN not found — check number and retry</span>'; einVerified=false; fireWebhook('EIN_VALIDATION_ERROR', { registration_id:flowState.registration.id }); }
+    else { el.innerHTML='<span class="text-green-600">✓ EIN verified — match found</span>'; einVerified=true; flowState.registration.brand.einVerified=true; }
   }, 1200);
 }
 
 function submitBrand() {
-  const r = app.registration;
-  const get = id => document.getElementById(id)?.value?.trim() || '';
+  const r = flowState.registration; const get = id => document.getElementById(id)?.value?.trim()||'';
   const errors = [];
-
   if (!get('legalName')) errors.push('Legal Entity Name is required');
   if (!get('dba')) errors.push('DBA is required');
   if (!get('ein')) errors.push('EIN is required');
@@ -703,390 +822,154 @@ function submitBrand() {
   if (!get('supportEmail')) errors.push('Support Email is required');
   if (!get('supportPhone')) errors.push('Support Phone is required');
   if (!document.getElementById('brandIndustry').value) errors.push('Industry is required');
-
-  if (errors.length) {
-    document.getElementById('s4-errors').innerHTML = errors.map(e =>
-      `<div class="feedback-item feedback-error mb-1">${e}</div>`
-    ).join('');
-    return;
-  }
-
-  r.brand = {
-    ...r.brand,
-    legalName: get('legalName'),
-    dba: get('dba'),
-    ein: get('ein'),
-    country: document.getElementById('country').value,
-    bizType: document.getElementById('bizType').value,
-    bizAddress: get('bizAddress'),
-    supportEmail: get('supportEmail'),
-    supportPhone: get('supportPhone'),
-    industry: document.getElementById('brandIndustry').value,
-    brandId: 'BRD-' + Math.random().toString(36).slice(2,7).toUpperCase(),
-  };
-
-  r.brandCycleCount = (r.brandCycleCount || 0) + 1;
-  fireWebhook('BRAND_SUBMITTED', { registration_id: r.id, brand_id: r.brand.brandId });
+  if (errors.length) { document.getElementById('s4-errors').innerHTML = errors.map(e=>`<div class="inline-err">• ${e}</div>`).join(''); return; }
+  r.brand = { ...r.brand, legalName:get('legalName'), dba:get('dba'), ein:get('ein'), country:document.getElementById('country').value, bizType:document.getElementById('bizType').value, bizAddress:get('bizAddress'), supportEmail:get('supportEmail'), supportPhone:get('supportPhone'), industry:document.getElementById('brandIndustry').value, brandId:'BRD-'+Math.random().toString(36).slice(2,7).toUpperCase() };
+  r.brandCycleCount = (r.brandCycleCount||0)+1;
+  fireWebhook('BRAND_SUBMITTED', { registration_id:r.id, brand_id:r.brand.brandId });
   transitionTo('S5');
 }
 
-// S5 — Brand Validation
+// S5
 function renderS5() {
-  const r = app.registration;
-  document.getElementById('main-content').innerHTML = `
-    <div class="fade-in">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold" style="background:#1a2035;color:#3b82f6">S5</div>
-        <div>
-          <div class="font-semibold">Brand Validation</div>
-          <div class="text-xs text-[#8b8fa8]">Automated format checks, DBA alignment, EIN confirmation</div>
-        </div>
-        <div class="ml-auto pill pill-system">System + Reviewer</div>
-      </div>
-      <div class="card p-6 text-center">
-        <div class="spin w-10 h-10 rounded-full border-4 border-[#2a2d3a] border-t-[#3b82f6] mx-auto mb-5"></div>
-        <div class="font-semibold mb-2">Validating Brand</div>
-        <div class="text-sm text-[#8b8fa8]" id="brand-substate">Automated validation running...</div>
-      </div>
+  const r = flowState.registration;
+  fc(`
+    ${stateHeader('S5','Brand Validation','Automated format checks, DBA/website alignment, EIN confirmation','System + Reviewer')}
+    <div class="card p-8 text-center">
+      <div class="spin w-10 h-10 rounded-full border-4 border-gray-200 border-t-blue-500 mx-auto mb-5"></div>
+      <div class="font-semibold text-gray-900 mb-1">Validating Brand</div>
+      <div class="text-sm text-gray-500" id="s5-sub">Automated validation running…</div>
+      <p class="text-xs text-gray-400 mt-3">Result is binary: PASS or CHANGES_REQUIRED. No partial pass.</p>
     </div>
-  `;
-
+  `);
+  if (!r.autoApproved) setTimeout(()=>{ const el=document.getElementById('s5-sub'); if(el) el.textContent='Human review in progress…'; }, 1200);
   setTimeout(() => {
-    if (!r.autoApproved) {
-      document.getElementById('brand-substate').textContent = 'Human review in progress...';
-    }
-  }, 1200);
-
-  setTimeout(() => {
-    // Simulate: 65% PASS, 35% CHANGES_REQUIRED
     const pass = r.autoApproved || Math.random() > 0.35;
     r.brandValidationResult = pass ? 'PASS' : 'CHANGES_REQUIRED';
-
-    if (pass) {
-      fireWebhook('BRAND_VALIDATED', { registration_id: r.id, brand_id: r.brand.brandId });
-      transitionTo('S7');
-    } else {
-      r.brandFeedback = generateBrandFeedback(r);
-      fireWebhook('BRAND_FEEDBACK_PROVIDED', { registration_id: r.id, brand_id: r.brand.brandId, feedback_payload: r.brandFeedback });
-      transitionTo('S6');
-    }
+    if (pass) { fireWebhook('BRAND_VALIDATED', { registration_id:r.id, brand_id:r.brand.brandId }); transitionTo('S7'); }
+    else { r.brandFeedback = [{ severity:'error', desc:'DBA / website mismatch', rec:`The DBA "${r.brand.dba}" could not be confirmed against the submitted Home Page URL. Ensure DBA exactly matches the brand name on your website.` }, { severity:'warn', desc:'Business type verification pending', rec:'Additional documentation may be required to confirm your registered business type.' }]; fireWebhook('BRAND_FEEDBACK_PROVIDED', { registration_id:r.id, brand_id:r.brand.brandId }); transitionTo('S6'); }
   }, r.autoApproved ? 1800 : 3200);
 }
 
-function generateBrandFeedback(r) {
-  return [
-    { id:'BF1', severity:'error', description:'DBA / website mismatch', recommendation:`The DBA "${r.brand.dba}" could not be confirmed against the submitted Home Page URL. Ensure DBA exactly matches the brand name displayed on your website.` },
-    { id:'BF2', severity:'warn', description:'Business type verification pending', recommendation:'Additional documentation may be required to confirm business type. Ensure your business is registered with state authorities.' },
-  ];
-}
-
-// S6 — Brand Feedback Provided
+// S6
 function renderS6() {
-  const r = app.registration;
-  const feedback = r.brandFeedback || [];
-  const severityClass = { error: 'feedback-error', warn: 'feedback-warn', info: 'feedback-info' };
-
-  document.getElementById('main-content').innerHTML = `
-    <div class="fade-in">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold" style="background:#2e2a1a;color:#f5a623">S6</div>
-        <div>
-          <div class="font-semibold">Brand Feedback Provided</div>
-          <div class="text-xs text-[#8b8fa8]">Validation result: CHANGES_REQUIRED</div>
-        </div>
-        <div class="ml-auto flex items-center gap-2">
-          <span class="badge-open">⚠ Open Question</span>
-          <div class="pill pill-user">User</div>
-        </div>
-      </div>
-
-      <div class="card p-5 mb-4">
-        <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-4">Brand Validation Issues</div>
-        ${feedback.map(f => `
-          <div class="feedback-item ${severityClass[f.severity]}">
-            <div class="font-semibold text-xs mb-1">${f.description}</div>
-            <div class="text-xs opacity-80">${f.recommendation}</div>
-          </div>
-        `).join('')}
-      </div>
-
-      <div class="card p-4 mb-4 border-[#3d2a1a]">
-        <div class="text-xs font-semibold text-[#f5a623] mb-2">⚠ Open Question — Brand Record Mutability</div>
-        <div class="text-xs text-[#8b8fa8]">When you resubmit corrected brand data: is this a correction to the existing record, or a new brand entity? This design decision is unresolved — downstream TCR impact TBD.</div>
-      </div>
-
-      <div class="flex gap-3">
-        <button class="btn btn-secondary flex-1" onclick="resubmitBrand()">
-          ↩ Correct & Resubmit Brand
-        </button>
-        <button class="btn btn-primary flex-1" onclick="proceedToRegistry()">
-          Proceed to Registry →
-        </button>
-      </div>
-      <p class="text-xs text-center text-[#8b8fa8] mt-2">You may proceed with current brand data. Choices are recorded.</p>
+  const r = flowState.registration;
+  const cls = { error:'feedback-error', warn:'feedback-warn' };
+  fc(`
+    ${stateHeader('S6','Brand Feedback Provided','Validation result: CHANGES_REQUIRED','User')}
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4 text-xs text-amber-700 font-medium">⚠ Open Question — Brand Record Mutability: correction to existing record vs. new brand entity? TCR impact TBD.</div>
+    <div class="card p-5 mb-5">
+      <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Brand Validation Issues</div>
+      ${(r.brandFeedback||[]).map(f=>`<div class="${cls[f.severity]}"><div class="font-semibold mb-0.5">${f.desc}</div><div class="text-gray-600">${f.rec}</div></div>`).join('')}
     </div>
-  `;
+    <div class="flex gap-3">
+      <button class="btn-secondary flex-1" onclick="resubmitBrand()">↩ Correct & Resubmit Brand</button>
+      <button class="btn-primary flex-1 justify-center" onclick="proceedToRegistry()">Proceed to Registry →</button>
+    </div>
+    <p class="text-xs text-center text-gray-400 mt-2">You may proceed with current brand data. All choices are recorded.</p>
+  `);
 }
 
 function resubmitBrand() {
-  app.registration.brandCycleCount++;
-  fireWebhook('BRAND_RESUBMITTED', { registration_id: app.registration.id, brand_id: app.registration.brand.brandId, cycle_count: app.registration.brandCycleCount });
+  flowState.registration.brandCycleCount++;
+  fireWebhook('BRAND_RESUBMITTED', { registration_id:flowState.registration.id, brand_id:flowState.registration.brand.brandId, cycle_count:flowState.registration.brandCycleCount });
   transitionTo('S4');
 }
-
 function proceedToRegistry() {
-  const r = app.registration;
-  r.brandFeedbackDisposition = { items_presented: r.brandFeedback?.length || 0, waived: r.brandFeedback?.length || 0 };
-  fireWebhook('PROCEEDING_TO_REGISTRY', { registration_id: r.id, brand_id: r.brand.brandId, feedback_waived_count: r.brandFeedbackDisposition.waived });
+  const r = flowState.registration;
+  fireWebhook('PROCEEDING_TO_REGISTRY', { registration_id:r.id, brand_id:r.brand.brandId, feedback_waived_count:(r.brandFeedback||[]).length });
   transitionTo('S7');
 }
 
-// S7 — Pending Registry Submission
+// S7
 function renderS7() {
-  const r = app.registration;
-  const registryMap = { '10DLC': 'TCR', 'TFN (Toll-Free)': 'Carrier Registry (TFN)', 'Short Code': 'CSCA' };
-  const targetRegistry = registryMap[r.channelType] || 'TCR';
-
-  document.getElementById('main-content').innerHTML = `
-    <div class="fade-in">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold" style="background:#1a2035;color:#3b82f6">S7</div>
-        <div>
-          <div class="font-semibold">Pending Registry Submission</div>
-          <div class="text-xs text-[#8b8fa8]">Submitting to ${targetRegistry} — no user action required</div>
-        </div>
-        <div class="ml-auto pill pill-system">System</div>
-      </div>
-      <div class="card p-6 text-center">
-        <div class="spin w-10 h-10 rounded-full border-4 border-[#2a2d3a] border-t-[#00d4aa] mx-auto mb-5"></div>
-        <div class="font-semibold mb-1">Submitting to ${targetRegistry}</div>
-        <div class="text-sm text-[#8b8fa8]" id="registry-substate">Initiating API call...</div>
-        <div class="mt-4 text-xs text-[#8b8fa8]">On failure: exponential backoff retry. After threshold: escalated to reviewer queue.</div>
-      </div>
+  const r = flowState.registration;
+  const reg = { '10DLC':'TCR', 'TFN (Toll-Free)':'Carrier Registry (TFN)', 'Short Code':'CSCA' }[r.channelType]||'TCR';
+  fc(`
+    ${stateHeader('S7','Pending Registry Submission',`Submitting to ${reg} — no user action required`,'System')}
+    <div class="card p-8 text-center">
+      <div class="spin w-10 h-10 rounded-full border-4 border-gray-200 border-t-green-500 mx-auto mb-5"></div>
+      <div class="font-semibold text-gray-900 mb-1">Submitting to ${reg}</div>
+      <div class="text-sm text-gray-500" id="s7-sub">Initiating API call…</div>
+      <p class="text-xs text-gray-400 mt-3">On failure: exponential backoff retry. After threshold: escalated to reviewer queue.</p>
     </div>
-  `;
-
+  `);
+  setTimeout(()=>{ const el=document.getElementById('s7-sub'); if(el) el.textContent='Awaiting acknowledgment…'; }, 1000);
   setTimeout(() => {
-    document.getElementById('registry-substate') && (document.getElementById('registry-substate').textContent = 'Awaiting acknowledgment...');
-  }, 1000);
-
-  setTimeout(() => {
-    // Simulate: 90% success, 10% retry/fail
-    const success = Math.random() > 0.1;
-    if (success) {
-      const submissionId = 'SUB-' + Math.random().toString(36).slice(2,9).toUpperCase();
-      r.registrySubmissionId = submissionId;
-      r.targetRegistry = targetRegistry;
-      fireWebhook('REGISTRY_SUBMITTED', { registration_id: r.id, registry: targetRegistry, submission_id: submissionId, channel_type: r.channelType });
-      transitionTo('P2');
-    } else {
-      fireWebhook('REGISTRY_SUBMISSION_FAILED', { registration_id: r.id, error_code: 'REGISTRY_TIMEOUT', retry_count: 1 });
-      document.getElementById('registry-substate').textContent = 'API timeout — retrying with backoff...';
-      setTimeout(() => transitionTo('P2'), 2000); // demo: always succeed on retry
-    }
+    const ok = Math.random() > 0.1;
+    r.registrySubmissionId = 'SUB-'+Math.random().toString(36).slice(2,9).toUpperCase();
+    r.targetRegistry = reg;
+    if (ok) { fireWebhook('REGISTRY_SUBMITTED', { registration_id:r.id, registry:reg, submission_id:r.registrySubmissionId, channel_type:r.channelType }); transitionTo('P2'); }
+    else { fireWebhook('REGISTRY_SUBMISSION_FAILED', { registration_id:r.id, error_code:'REGISTRY_TIMEOUT', retry_count:1 }); const el=document.getElementById('s7-sub'); if(el) el.textContent='Timeout — retrying with backoff…'; setTimeout(()=>{ fireWebhook('REGISTRY_SUBMITTED', { registration_id:r.id, registry:reg, submission_id:r.registrySubmissionId, channel_type:r.channelType }); transitionTo('P2'); }, 2000); }
   }, 2500);
 }
 
-// P2 — Registry Submitted (success)
+// P2
 function renderP2() {
-  const r = app.registration;
+  const r = flowState.registration;
   document.getElementById('close-btn').style.display = 'none';
-
-  document.getElementById('main-content').innerHTML = `
-    <div class="fade-in">
-      <div class="card p-8 text-center">
-        <div class="w-16 h-16 rounded-full bg-[#0d2e1f] flex items-center justify-center mx-auto mb-5 text-3xl">✓</div>
-        <div class="text-[#00d4aa] font-bold text-xl mb-2">Registry Submitted</div>
-        <div class="text-sm text-[#8b8fa8] mb-6">Phase 1 complete. Your registration has been submitted to <strong class="text-white">${r.targetRegistry}</strong>.</div>
-
-        <div class="card p-4 text-left max-w-sm mx-auto mb-6">
-          <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-3">Submission Summary</div>
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between"><span class="text-[#8b8fa8]">Registration ID</span><span class="font-mono text-xs">${r.id}</span></div>
-            <div class="flex justify-between"><span class="text-[#8b8fa8]">Submission ID</span><span class="font-mono text-xs">${r.registrySubmissionId}</span></div>
-            <div class="flex justify-between"><span class="text-[#8b8fa8]">Channel</span><span>${r.channelType}</span></div>
-            <div class="flex justify-between"><span class="text-[#8b8fa8]">Registry</span><span>${r.targetRegistry}</span></div>
-            <div class="flex justify-between"><span class="text-[#8b8fa8]">Audit Cycles</span><span>${r.cycleCount}</span></div>
-            <div class="flex justify-between"><span class="text-[#8b8fa8]">Brand Cycles</span><span>${r.brandCycleCount}</span></div>
-            <div class="flex justify-between"><span class="text-[#8b8fa8]">CNP Selected</span><span>${r.cnpSuggestion}${r.cnpOverridden ? ' ⚠' : ''}</span></div>
-          </div>
+  // Add to dashboard list
+  const exists = registrations.find(x => x.id === r.id);
+  if (!exists && r.id) {
+    registrations.unshift({ id:r.id, name:r.brand?.legalName||'New Registration', dba:r.brand?.dba||'', channel:r.channelType, statusKey:'approved', state:'P2', date:new Date().toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'}), ein:r.brand?.ein, industry:r.brand?.industry||'', cycles:r.cycleCount, brand:r.brand?.brandId||null });
+  }
+  fc(`
+    <div class="card p-8 text-center border-green-100">
+      <div class="w-16 h-16 rounded-full bg-green-50 border-2 border-green-200 flex items-center justify-center mx-auto mb-5">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M5 14l7 7 11-11" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="text-green-700 font-bold text-xl mb-1">Registry Submitted</div>
+      <p class="text-gray-500 text-sm mb-6">Phase 1 complete. Submitted to <strong class="text-gray-800">${r.targetRegistry||'TCR'}</strong>.</p>
+      <div class="card p-4 text-left max-w-xs mx-auto mb-6 bg-gray-50">
+        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Submission Summary</div>
+        <div class="space-y-2 text-sm">
+          ${[['Registration ID', r.id],['Submission ID', r.registrySubmissionId],['Channel', r.channelType],['Registry', r.targetRegistry||'TCR'],['Audit Cycles', r.cycleCount],['CNP', r.cnpSuggestion+(r.cnpOverridden?' ⚠':'')]].map(([k,v])=>`<div class="flex justify-between gap-4"><span class="text-gray-400">${k}</span><span class="font-medium text-right font-mono text-xs">${v||'—'}</span></div>`).join('')}
         </div>
-
-        <div class="text-xs text-[#8b8fa8] mb-5">Phase 2 (Registry Approval) is channel-type specific and begins from here.</div>
-        <button class="btn btn-primary px-6" onclick="newRegistration()">+ Start New Registration</button>
+      </div>
+      <div class="text-xs text-gray-400 mb-5">Phase 2 (Registry Approval) is channel-type specific and begins from here.</div>
+      <div class="flex gap-3 justify-center">
+        <button class="btn-secondary" onclick="showDashboard()">← Back to Register</button>
+        <button class="btn-primary" onclick="startNewRegistration()">+ New Registration</button>
       </div>
     </div>
-  `;
+  `);
+  renderFlowSteps();
+  updateFlowProgress();
 }
 
-// S8 — Closed
-function renderS8() {
-  const r = app.registration;
+// S8
+function renderS8(reason) {
+  const r = flowState.registration;
+  r.closureReason = reason || 'USER_CLOSED';
   document.getElementById('close-btn').style.display = 'none';
-
-  document.getElementById('main-content').innerHTML = `
-    <div class="fade-in">
-      <div class="card p-8 text-center">
-        <div class="w-16 h-16 rounded-full bg-[#2e0d0d] flex items-center justify-center mx-auto mb-5 text-3xl">✕</div>
-        <div class="text-red-400 font-bold text-xl mb-2">Registration Closed</div>
-        <div class="text-sm text-[#8b8fa8] mb-2">Reason: <span class="text-white">${r.closureReason || 'USER_CLOSED'}</span></div>
-        <div class="text-xs text-[#8b8fa8] mb-6 max-w-sm mx-auto">The registration artifact is retained read-only for pipeline and abandon rate reporting. A new registration is required to retry.</div>
-
-        <div class="card p-4 text-left max-w-xs mx-auto mb-6">
-          <div class="text-xs font-semibold text-[#8b8fa8] uppercase tracking-wider mb-3">Artifact (Read-Only)</div>
-          <div class="space-y-2 text-sm">
-            <div class="flex justify-between"><span class="text-[#8b8fa8]">Registration ID</span><span class="font-mono text-xs">${r.id}</span></div>
-            <div class="flex justify-between"><span class="text-[#8b8fa8]">Closed At State</span><span>${app.currentState}</span></div>
-            <div class="flex justify-between"><span class="text-[#8b8fa8]">Channel</span><span>${r.channelType || '—'}</span></div>
-          </div>
-        </div>
-
-        <button class="btn btn-primary px-6" onclick="newRegistration()">+ Start New Registration</button>
+  fc(`
+    <div class="card p-8 text-center border-red-100">
+      <div class="w-16 h-16 rounded-full bg-red-50 border-2 border-red-200 flex items-center justify-center mx-auto mb-5">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="text-red-600 font-bold text-xl mb-1">Registration Closed</div>
+      <p class="text-gray-500 text-sm mb-2">Reason: <span class="font-medium text-gray-800">${r.closureReason}</span></p>
+      <p class="text-xs text-gray-400 mb-6 max-w-xs mx-auto">Artifact retained read-only for pipeline and abandon rate reporting. A new registration is required to retry.</p>
+      <div class="flex gap-3 justify-center">
+        <button class="btn-secondary" onclick="showDashboard()">← Back to Register</button>
+        <button class="btn-primary" onclick="startNewRegistration()">+ New Registration</button>
       </div>
     </div>
-  `;
+  `);
 }
 
-// ============================================================
-// CLOSE REGISTRATION (available from any state)
-// ============================================================
 function closeRegistration() {
   if (!confirm('Close this registration? The artifact will be retained read-only.')) return;
-  app.registration.closureReason = 'USER_CLOSED';
-  fireWebhook('REGISTRATION_CLOSED', { registration_id: app.registration.id, reason: 'USER_CLOSED', actor_type: 'user' });
-  transitionTo('S8');
-}
-
-function newRegistration() {
-  app = { currentState: null, registration: {}, webhooks: app.webhooks, eventLog: app.eventLog, activeTab: app.activeTab, auditProcessing: false, brandProcessing: false, registryProcessing: false };
-  einVerified = false;
-  document.getElementById('channel-badge').style.display = 'none';
-  document.getElementById('close-btn').style.display = 'none';
-  renderStateNav();
-  renderWelcome();
-  updateProgress();
+  fireWebhook('REGISTRATION_CLOSED', { registration_id:flowState.registration.id, reason:'USER_CLOSED', actor_type:'user' });
+  renderS8('USER_CLOSED');
+  flowState.currentState = 'S8';
+  renderFlowSteps();
+  updateFlowProgress();
 }
 
 // ============================================================
-// HELPERS
+//  BOOT
 // ============================================================
-function recordFeedbackDisposition(type, action) {
-  const r = app.registration;
-  if (type === 'campaign') {
-    r.feedbackDisposition = { items_presented: r.auditFeedback?.length || 0, action };
-  }
-}
-
-function fireWebhook(event, payload) {
-  const entry = { event, payload, ts: new Date().toLocaleTimeString() };
-  app.webhooks.unshift(entry);
-  logEvent(`Webhook: ${event}`, 'webhook');
-  renderWebhooks();
-}
-
-function logEvent(msg, type) {
-  app.eventLog.unshift({ msg, type, ts: new Date().toLocaleTimeString() });
-  renderEventLog();
-}
-
-function renderWebhooks() {
-  const colors = { REGISTRATION_SUBMITTED:'#6c63ff', AUDIT_FEEDBACK_AVAILABLE:'#3b82f6', CAMPAIGN_RESUBMITTED:'#f5a623', PROCEEDING_TO_BRAND:'#00d4aa', BRAND_SUBMITTED:'#6c63ff', BRAND_VALIDATED:'#00d4aa', BRAND_FEEDBACK_PROVIDED:'#f5a623', BRAND_RESUBMITTED:'#f5a623', PROCEEDING_TO_REGISTRY:'#00d4aa', REGISTRY_SUBMITTED:'#00d4aa', REGISTRY_SUBMISSION_FAILED:'#e74c3c', REGISTRATION_CLOSED:'#e74c3c', EIN_VALIDATION_ERROR:'#e74c3c' };
-
-  document.getElementById('webhook-list').innerHTML = app.webhooks.slice(0,20).map(w => `
-    <div class="webhook-item">
-      <div class="font-bold mb-1" style="color:${colors[w.event]||'#8b8fa8'}">${w.event}</div>
-      <div class="text-[#8b8fa8] mb-1">${w.ts}</div>
-      <div class="text-[#6b7280] text-xs">${JSON.stringify(w.payload, null, 0).slice(0, 120)}</div>
-    </div>
-  `).join('');
-}
-
-function renderEventLog() {
-  document.getElementById('log-list').innerHTML = app.eventLog.slice(0,40).map(e => `
-    <div class="text-xs py-1.5 border-b border-[#1e2235] flex gap-2">
-      <span class="text-[#8b8fa8] flex-shrink-0">${e.ts}</span>
-      <span class="${e.type === 'webhook' ? 'text-[#6c63ff]' : e.type === 'transition' ? 'text-[#00d4aa]' : 'text-[#8b8fa8]'}">${e.msg}</span>
-    </div>
-  `).join('');
-}
-
-function switchTab(tab) {
-  app.activeTab = tab;
-  document.getElementById('tab-webhooks').className = 'tab' + (tab === 'webhooks' ? ' active' : '');
-  document.getElementById('tab-log').className = 'tab' + (tab === 'log' ? ' active' : '');
-  document.getElementById('webhook-list').style.display = tab === 'webhooks' ? 'block' : 'none';
-  document.getElementById('log-list').style.display = tab === 'log' ? 'block' : 'none';
-}
-
-const STATE_ORDER = ['S1','S2','S3','S4','S5','S6','S7','P2','S8'];
-const STATE_PROGRESS = { S1:10, S2:25, S3:38, S4:52, S5:68, S6:72, S7:85, P2:100, S8:0 };
-
-function renderStateNav() {
-  const current = app.currentState;
-  const completedStates = getCompletedStates();
-
-  document.getElementById('state-nav').innerHTML = Object.values(STATES).map(s => {
-    const isActive = current === s.id;
-    const isCompleted = completedStates.includes(s.id);
-    const isTerminal = s.flags.includes('terminal') || s.id === 'P2';
-
-    let statusDot = '';
-    if (isActive) statusDot = `<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${s.color}"></span>`;
-    else if (isCompleted) statusDot = `<span class="w-2 h-2 rounded-full flex-shrink-0 bg-[#00d4aa]"></span>`;
-    else statusDot = `<span class="w-2 h-2 rounded-full flex-shrink-0 bg-[#2a2d3a]"></span>`;
-
-    const actorPills = {
-      User: '<span class="pill pill-user" style="font-size:9px;padding:1px 6px">User</span>',
-      System: '<span class="pill pill-system" style="font-size:9px;padding:1px 6px">System</span>',
-      terminal: '<span class="pill" style="background:#2e0d0d;color:#f77;font-size:9px;padding:1px 6px">Terminal</span>',
-    };
-
-    return `
-      <div class="flex items-center gap-2 px-3 py-2 rounded-lg cursor-default ${isActive ? 'bg-[#1e1a35]' : ''} ${isCompleted && !isActive ? 'opacity-60' : ''}">
-        ${statusDot}
-        <div class="flex-1 min-w-0">
-          <div class="text-xs font-medium truncate ${isActive ? 'text-white' : 'text-[#8b8fa8]'}">${s.name}</div>
-          <div class="flex gap-1 mt-0.5 flex-wrap">
-            ${actorPills[s.actor] || ''}
-            ${s.flags.includes('auto') ? '<span class="badge-auto" style="font-size:9px;padding:1px 5px">Auto</span>' : ''}
-            ${s.flags.includes('open') ? '<span class="badge-open" style="font-size:9px;padding:1px 5px">⚠</span>' : ''}
-          </div>
-        </div>
-        <div class="text-[10px] text-[#4a4d5f] font-mono">${s.id}</div>
-      </div>
-    `;
-  }).join('');
-}
-
-function getCompletedStates() {
-  const order = ['S1','S2','S3','S4','S5','S6','S7','P2'];
-  const idx = order.indexOf(app.currentState);
-  return idx > 0 ? order.slice(0, idx) : [];
-}
-
-function updateProgress() {
-  const pct = app.currentState ? (STATE_PROGRESS[app.currentState] || 0) : 0;
-  document.getElementById('progress-bar').style.width = pct + '%';
-  const labels = { S1:'Draft', S2:'Audit running...', S3:'Reviewing feedback', S4:'Brand collection', S5:'Brand validation...', S6:'Brand feedback', S7:'Submitting...', P2:'Complete!', S8:'Closed' };
-  document.getElementById('progress-label').textContent = app.currentState ? labels[app.currentState] || app.currentState : 'Not started';
-}
-
-function updateArtifactSummary() {
-  const r = app.registration;
-  if (!r.id) { document.getElementById('artifact-summary').innerHTML = '<div class="text-[#4a4d5f]">No active registration</div>'; return; }
-
-  const items = [
-    r.id && `<div><span class="text-[#4a4d5f]">ID</span> <span class="font-mono">${r.id.slice(0,10)}</span></div>`,
-    r.channelType && `<div><span class="text-[#4a4d5f]">Channel</span> ${r.channelType}</div>`,
-    r.autoApproved !== undefined && `<div><span class="text-[#4a4d5f]">Auto-approved</span> ${r.autoApproved ? '<span class="text-[#00d4aa]">Yes</span>' : '<span class="text-[#f5a623]">No</span>'}`,
-    r.cycleCount && `<div><span class="text-[#4a4d5f]">Audit cycles</span> ${r.cycleCount}</div>`,
-    r.brand?.brandId && `<div><span class="text-[#4a4d5f]">Brand</span> <span class="font-mono">${r.brand.brandId}</span></div>`,
-    r.cnpSuggestion && `<div><span class="text-[#4a4d5f]">CNP</span> ${r.cnpSuggestion}${r.cnpOverridden ? ' ⚠' : ''}</div>`,
-    r.registrySubmissionId && `<div><span class="text-[#4a4d5f]">Sub ID</span> <span class="font-mono text-[9px]">${r.registrySubmissionId}</span></div>`,
-  ].filter(Boolean);
-
-  document.getElementById('artifact-summary').innerHTML = items.join('') || '<div class="text-[#4a4d5f]">Empty</div>';
-}
+window.onload = showDashboard;
 </script>
 </body>
 </html>
